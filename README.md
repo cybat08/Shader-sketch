@@ -4,6 +4,9 @@ A powerful C++ desktop application for 3D model painting, offering professional-
 
 ![3D Model Painter](generated-icon.png)
 
+[![GitHub Release](https://img.shields.io/github/v/release/3D-Model-Painter/3D-Model-Painter?style=flat-square&logo=github)](https://github.com/3D-Model-Painter/3D-Model-Painter/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 ## Features
 
 - Interactive 3D model painting with multiple tools
@@ -12,6 +15,7 @@ A powerful C++ desktop application for 3D model painting, offering professional-
 - Multiple export formats (OBJ, FBX, SVG, PPM, TXT)
 - Cross-platform compatibility (Linux, macOS, Windows)
 - Windows installer with proper desktop integration
+- Automatic GitHub release detection and updates
 
 ## Installation
 
@@ -132,10 +136,40 @@ The color wheel provides professional color selection with color theory principl
 - Use `n`, `p` to cycle through harmony types (complementary, analogous, etc.)
 - Use number keys (`1-5`) to select colors from the current harmony
 
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- [Color Wheel Guide](docs/Color_Wheel.md) - Detailed information about the color wheel and harmony feature
+- [Export Formats](docs/Export_Formats.md) - Information about supported export formats
+- [Windows Packaging](docs/Windows_Packaging.md) - Details on Windows installation and packaging
+- [Project Organization](docs/Project_Organization.md) - Overview of the project structure
+- [GitHub Release Process](docs/GitHub_Releases.md) - Information about the release process
+
+The [documentation index](docs/index.md) provides a complete overview of all available documentation.
+
 ## License
 
-MIT License - See LICENSE file for details.
+MIT License - See [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on the process for submitting pull requests.
+
+## Releases
+
+Check the [Releases](https://github.com/3D-Model-Painter/3D-Model-Painter/releases) page for the latest versions and release notes.
+
+<!-- RELEASE_INFO_START -->
+## Latest Release: v0.2.0
+
+Released on: 2023-11-15
+[View on GitHub](https://github.com/3D-Model-Painter/3D-Model-Painter/releases/tag/v0.2.0)
+
+### What's New:
+- Added interactive color wheel with harmony suggestions
+- Implemented Windows taskbar integration
+- Added support for SVG and PPM export formats
+- Improved layer management system
+- Enhanced brush tools with new pattern options
+<!-- RELEASE_INFO_END -->

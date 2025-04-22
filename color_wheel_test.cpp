@@ -6,22 +6,22 @@ int main() {
     std::cout << "===================================\n\n";
     
     // Create a color wheel with default red color
-    ColorWheel wheel;
+    color_wheel::ColorWheel wheel;
     
     // Run the interactive color wheel
     wheel.interactive();
     
     // After exiting, show the selected color
-    Color selectedColor = wheel.getSelectedColor();
+    color_wheel::Color selectedColor = wheel.getSelectedColor();
     std::cout << "\nFinal selected color: " << selectedColor.getHexCode() 
               << " " << selectedColor.getColoredChar(' ') << "\n";
     
     // Show all harmonies for the selected color
     std::cout << "\nAll harmonies for selected color:\n";
-    auto allHarmonies = ColorHarmony::generateAllHarmonies(selectedColor);
+    auto allHarmonies = color_wheel::ColorHarmony::generateAllHarmonies(selectedColor);
     
     for (const auto& harmony : allHarmonies) {
-        std::cout << "- " << ColorHarmony::getHarmonyName(harmony.first) << ": ";
+        std::cout << "- " << color_wheel::ColorHarmony::getHarmonyName(harmony.first) << ": ";
         
         for (const auto& color : harmony.second) {
             std::cout << color.getColoredChar(' ');
