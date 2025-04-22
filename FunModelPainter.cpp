@@ -11,6 +11,8 @@
 #include <functional>
 #include <fstream>
 #include <sstream>
+#include <algorithm> // For color wheel calculations
+#include <unordered_map> // For model data storage
 
 // Fun 3D Model Painter with improved UX and cool effects
 // ANSI color and styling codes
@@ -100,6 +102,167 @@ void showLoadingAnimation(const std::string& message, int durationMs = 1000) {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
     std::cout << std::endl;
+}
+
+// RGB color structure for color wheel and harmony
+struct RGB {
+    int r, g, b;
+    
+    RGB() : r(0), g(0), b(0) {}
+    RGB(int r, int g, int b) : r(r), g(g), b(b) {}
+    
+    // Convert RGB to ANSI terminal color (approximate match)
+    std::string toAnsiColor() const {
+        // Find the closest ANSI color
+        if (r > 200 && g < 100 && b < 100) return FG_BRIGHT_RED;
+        if (r > 150 && g < 100 && b < 100) return FG_RED;
+        if (r < 100 && g > 200 && b < 100) return FG_BRIGHT_GREEN;
+        if (r < 100 && g > 150 && b < 100) return FG_GREEN;
+        if (r < 100 && g < 100 && b > 200) return FG_BRIGHT_BLUE;
+        if (r < 100 && g < 100 && b > 150) return FG_BLUE;
+        if (r > 200 && g > 200 && b < 100) return FG_BRIGHT_YELLOW;
+        if (r > 150 && g > 150 && b < 100) return FG_YELLOW;
+        if (r > 200 && g < 100 && b > 200) return FG_BRIGHT_MAGENTA;
+        if (r > 150 && g < 100 && b > 150) return FG_MAGENTA;
+        if (r < 100 && g > 200 && b > 200) return FG_BRIGHT_CYAN;
+        if (r < 100 && g > 150 && b > 150) return FG_CYAN;
+        if (r > 200 && g > 200 && b > 200) return FG_BRIGHT_WHITE;
+        if (r > 150 && g > 150 && b > 150) return FG_WHITE;
+        if (r < 50 && g < 50 && b < 50) return FG_BLACK;
+        return FG_BRIGHT_WHITE; // Default
+    }
+    
+    // Convert to terminal color name
+    std::string getColorName() const {
+        std::string colorCode = toAnsiColor();
+        
+        if (colorCode == FG_BRIGHT_RED) return "Bright Red";
+        if (colorCode == FG_RED) return "Red";
+        if (colorCode == FG_BRIGHT_GREEN) return "Bright Green";
+        if (colorCode == FG_GREEN) return "Green";
+        if (colorCode == FG_BRIGHT_BLUE) return "Bright Blue";
+        if (colorCode == FG_BLUE) return "Blue";
+        if (colorCode == FG_BRIGHT_YELLOW) return "Bright Yellow";
+        if (colorCode == FG_YELLOW) return "Yellow";
+        if (colorCode == FG_BRIGHT_MAGENTA) return "Bright Magenta";
+        if (colorCode == FG_MAGENTA) return "Magenta";
+        if (colorCode == FG_BRIGHT_CYAN) return "Bright Cyan";
+        if (colorCode == FG_CYAN) return "Cyan";
+        if (colorCode == FG_BRIGHT_WHITE) return "White";
+        if (colorCode == FG_WHITE) return "Light Gray";
+        if (colorCode == FG_BLACK) return "Black";
+        
+        return "Custom";
+    }
+};
+
+// HSV color structure for color wheel calculations
+struct HSV {
+    float h; // Hue [0-360]
+    float s; // Saturation [0-1]
+    float v; // Value [0-1]
+    
+    HSV() : h(0), s(0), v(0) {}
+    HSV(float h, float s, float v) : h(h), s(s), v(v) {}
+    
+    // Convert HSV to RGB
+    RGB toRGB() const {
+        float c = v * s;
+        float x = c * (1 - std::abs(std::fmod(h / 60.0f, 2) - 1));
+        float m = v - c;
+        
+        float r = 0, g = 0, b = 0;
+        
+        if (h >= 0 && h < 60) {
+            r = c; g = x; b = 0;
+        } else if (h >= 60 && h < 120) {
+            r = x; g = c; b = 0;
+        } else if (h >= 120 && h < 180) {
+            r = 0; g = c; b = x;
+        } else if (h >= 180 && h < 240) {
+            r = 0; g = x; b = c;
+        } else if (h >= 240 && h < 300) {
+            r = x; g = 0; b = c;
+        } else {
+            r = c; g = 0; b = x;
+        }
+        
+        return RGB(
+            static_cast<int>((r + m) * 255),
+            static_cast<int>((g + m) * 255),
+            static_cast<int>((b + m) * 255)
+        );
+    }
+    
+    // Generate complementary color (opposite on color wheel)
+    HSV complementary() const {
+        return HSV(std::fmod(h + 180, 360), s, v);
+    }
+    
+    // Generate analogous colors (adjacent on color wheel)
+    std::vector<HSV> analogous(int count = 2, float angle = 30) const {
+        std::vector<HSV> colors;
+        for (int i = 1; i <= count; i++) {
+            colors.push_back(HSV(std::fmod(h + angle * i, 360), s, v));
+            colors.push_back(HSV(std::fmod(h - angle * i + 360, 360), s, v));
+        }
+        return colors;
+    }
+    
+    // Generate triadic colors (three equally spaced colors)
+    std::vector<HSV> triadic() const {
+        std::vector<HSV> colors;
+        colors.push_back(HSV(std::fmod(h + 120, 360), s, v));
+        colors.push_back(HSV(std::fmod(h + 240, 360), s, v));
+        return colors;
+    }
+    
+    // Generate tetradic colors (rectangle on color wheel)
+    std::vector<HSV> tetradic() const {
+        std::vector<HSV> colors;
+        colors.push_back(HSV(std::fmod(h + 60, 360), s, v));
+        colors.push_back(HSV(std::fmod(h + 180, 360), s, v));
+        colors.push_back(HSV(std::fmod(h + 240, 360), s, v));
+        return colors;
+    }
+    
+    // Generate split complementary colors
+    std::vector<HSV> splitComplementary() const {
+        std::vector<HSV> colors;
+        float compHue = std::fmod(h + 180, 360);
+        colors.push_back(HSV(std::fmod(compHue - 30, 360), s, v));
+        colors.push_back(HSV(std::fmod(compHue + 30, 360), s, v));
+        return colors;
+    }
+};
+
+// Convert RGB to HSV
+HSV rgbToHsv(const RGB& rgb) {
+    float r = rgb.r / 255.0f;
+    float g = rgb.g / 255.0f;
+    float b = rgb.b / 255.0f;
+    
+    float cmax = std::max(std::max(r, g), b);
+    float cmin = std::min(std::min(r, g), b);
+    float delta = cmax - cmin;
+    
+    float h = 0;
+    if (delta == 0) {
+        h = 0;
+    } else if (cmax == r) {
+        h = 60 * std::fmod(((g - b) / delta), 6);
+    } else if (cmax == g) {
+        h = 60 * (((b - r) / delta) + 2);
+    } else {
+        h = 60 * (((r - g) / delta) + 4);
+    }
+    
+    if (h < 0) h += 360;
+    
+    float s = (cmax == 0) ? 0 : (delta / cmax);
+    float v = cmax;
+    
+    return HSV(h, s, v);
 }
 
 // Helper to get random color
@@ -622,9 +785,40 @@ private:
     Texture texture;
 };
 
+// 3D model data structures
+struct Vertex {
+    float x, y, z;
+    
+    Vertex() : x(0), y(0), z(0) {}
+    Vertex(float x, float y, float z) : x(x), y(y), z(z) {}
+};
+
+struct UV {
+    float u, v;
+    
+    UV() : u(0), v(0) {}
+    UV(float u, float v) : u(u), v(v) {}
+};
+
+struct Face {
+    std::vector<int> vertexIndices;       // Indices to vertices
+    std::vector<int> uvIndices;           // Indices to UV coordinates
+    std::vector<int> normalIndices;       // Indices to normals
+    
+    Face() {}
+    
+    // Helper to add a vertex-UV-normal triplet to the face
+    void addVertex(int vIdx, int uvIdx, int nIdx) {
+        vertexIndices.push_back(vIdx);
+        uvIndices.push_back(uvIdx);
+        normalIndices.push_back(nIdx);
+    }
+};
+
+// Enhanced Model class with UV mapping support
 class Model {
 public:
-    Model() : loaded(false) {
+    Model() : loaded(false), modelName("Untitled") {
         std::cout << FG_MAGENTA << "✓ " << "Model created" << RESET << std::endl;
     }
     
@@ -638,15 +832,383 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
         
-        std::cout << FG_BRIGHT_GREEN << "✓" << RESET << std::endl;
+        // Extract model name from path
+        size_t lastSlash = path.find_last_of("/\\");
+        size_t lastDot = path.find_last_of(".");
+        if (lastSlash == std::string::npos) lastSlash = 0; else lastSlash++;
+        if (lastDot == std::string::npos) lastDot = path.length();
+        modelName = path.substr(lastSlash, lastDot - lastSlash);
+        
+        // For demo purposes, create a simple cube model with UVs
+        createDemoModel();
+        
+        // In a real implementation, we would parse the OBJ/FBX file here
+        // Example code for real OBJ parsing would be:
+        /*
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            std::cerr << "Failed to open model file: " << path << std::endl;
+            return false;
+        }
+        
+        std::string line;
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            std::string prefix;
+            iss >> prefix;
+            
+            if (prefix == "v") {
+                // Parse vertex
+                float x, y, z;
+                iss >> x >> y >> z;
+                vertices.push_back(Vertex(x, y, z));
+            } 
+            else if (prefix == "vt") {
+                // Parse UV coordinate
+                float u, v;
+                iss >> u >> v;
+                uvs.push_back(UV(u, v));
+            }
+            else if (prefix == "f") {
+                // Parse face
+                Face face;
+                std::string vertexData;
+                while (iss >> vertexData) {
+                    std::replace(vertexData.begin(), vertexData.end(), '/', ' ');
+                    std::istringstream viss(vertexData);
+                    int v, t, n;
+                    viss >> v;
+                    if (viss >> t) {
+                        if (!(viss >> n)) n = 0;
+                        face.addVertex(v-1, t-1, n-1); // OBJ is 1-indexed
+                    } else {
+                        face.addVertex(v-1, 0, 0);
+                    }
+                }
+                faces.push_back(face);
+            }
+        }
+        */
+        
         loaded = true;
+        std::cout << FG_BRIGHT_GREEN << "✓" << RESET << std::endl;
         return true;
     }
     
+    // Create a demo cube model with UV coordinates
+    void createDemoModel() {
+        // Clear existing data
+        vertices.clear();
+        uvs.clear();
+        faces.clear();
+        
+        // Create a simple cube
+        // Front face
+        vertices.push_back(Vertex(-1.0f, -1.0f, 1.0f));  // 0: bottom-left-front
+        vertices.push_back(Vertex(1.0f, -1.0f, 1.0f));   // 1: bottom-right-front
+        vertices.push_back(Vertex(1.0f, 1.0f, 1.0f));    // 2: top-right-front
+        vertices.push_back(Vertex(-1.0f, 1.0f, 1.0f));   // 3: top-left-front
+        
+        // Back face
+        vertices.push_back(Vertex(-1.0f, -1.0f, -1.0f)); // 4: bottom-left-back
+        vertices.push_back(Vertex(1.0f, -1.0f, -1.0f));  // 5: bottom-right-back
+        vertices.push_back(Vertex(1.0f, 1.0f, -1.0f));   // 6: top-right-back
+        vertices.push_back(Vertex(-1.0f, 1.0f, -1.0f));  // 7: top-left-back
+        
+        // Create UV coordinates for a basic cube unwrap
+        // Each face gets a portion of the UV space
+        // Front face UVs
+        uvs.push_back(UV(0.0f, 0.0f));    // 0: bottom-left
+        uvs.push_back(UV(0.25f, 0.0f));   // 1: bottom-right
+        uvs.push_back(UV(0.25f, 0.25f));  // 2: top-right
+        uvs.push_back(UV(0.0f, 0.25f));   // 3: top-left
+        
+        // Back face UVs
+        uvs.push_back(UV(0.25f, 0.0f));   // 4: bottom-left
+        uvs.push_back(UV(0.5f, 0.0f));    // 5: bottom-right
+        uvs.push_back(UV(0.5f, 0.25f));   // 6: top-right
+        uvs.push_back(UV(0.25f, 0.25f));  // 7: top-left
+        
+        // Left face UVs
+        uvs.push_back(UV(0.0f, 0.25f));   // 8: bottom-left
+        uvs.push_back(UV(0.25f, 0.25f));  // 9: bottom-right
+        uvs.push_back(UV(0.25f, 0.5f));   // 10: top-right
+        uvs.push_back(UV(0.0f, 0.5f));    // 11: top-left
+        
+        // Right face UVs
+        uvs.push_back(UV(0.25f, 0.25f));  // 12: bottom-left
+        uvs.push_back(UV(0.5f, 0.25f));   // 13: bottom-right
+        uvs.push_back(UV(0.5f, 0.5f));    // 14: top-right
+        uvs.push_back(UV(0.25f, 0.5f));   // 15: top-left
+        
+        // Top face UVs
+        uvs.push_back(UV(0.0f, 0.5f));    // 16: bottom-left
+        uvs.push_back(UV(0.25f, 0.5f));   // 17: bottom-right
+        uvs.push_back(UV(0.25f, 0.75f));  // 18: top-right
+        uvs.push_back(UV(0.0f, 0.75f));   // 19: top-left
+        
+        // Bottom face UVs
+        uvs.push_back(UV(0.25f, 0.5f));   // 20: bottom-left
+        uvs.push_back(UV(0.5f, 0.5f));    // 21: bottom-right
+        uvs.push_back(UV(0.5f, 0.75f));   // 22: top-right
+        uvs.push_back(UV(0.25f, 0.75f));  // 23: top-left
+        
+        // Create faces with proper UV indices
+        Face frontFace;
+        frontFace.addVertex(0, 0, 0);
+        frontFace.addVertex(1, 1, 0);
+        frontFace.addVertex(2, 2, 0);
+        frontFace.addVertex(3, 3, 0);
+        faces.push_back(frontFace);
+        
+        Face backFace;
+        backFace.addVertex(5, 5, 0);
+        backFace.addVertex(4, 4, 0);
+        backFace.addVertex(7, 7, 0);
+        backFace.addVertex(6, 6, 0);
+        faces.push_back(backFace);
+        
+        Face leftFace;
+        leftFace.addVertex(4, 8, 0);
+        leftFace.addVertex(0, 9, 0);
+        leftFace.addVertex(3, 10, 0);
+        leftFace.addVertex(7, 11, 0);
+        faces.push_back(leftFace);
+        
+        Face rightFace;
+        rightFace.addVertex(1, 12, 0);
+        rightFace.addVertex(5, 13, 0);
+        rightFace.addVertex(6, 14, 0);
+        rightFace.addVertex(2, 15, 0);
+        faces.push_back(rightFace);
+        
+        Face topFace;
+        topFace.addVertex(3, 16, 0);
+        topFace.addVertex(2, 17, 0);
+        topFace.addVertex(6, 18, 0);
+        topFace.addVertex(7, 19, 0);
+        faces.push_back(topFace);
+        
+        Face bottomFace;
+        bottomFace.addVertex(4, 20, 0);
+        bottomFace.addVertex(5, 21, 0);
+        bottomFace.addVertex(1, 22, 0);
+        bottomFace.addVertex(0, 23, 0);
+        faces.push_back(bottomFace);
+    }
+    
+    // Generate a UV map image of the current unwrapping
+    void generateUVMap(Texture& texture) const {
+        int width = texture.getWidth();
+        int height = texture.getHeight();
+        
+        // Clear the texture
+        texture.clear();
+        
+        // Draw UV layout in the texture
+        // Use different colors for each face
+        Color faceColors[6] = {
+            Color("█", FG_BRIGHT_RED, "Red"),
+            Color("█", FG_BRIGHT_GREEN, "Green"),
+            Color("█", FG_BRIGHT_BLUE, "Blue"),
+            Color("█", FG_BRIGHT_YELLOW, "Yellow"),
+            Color("█", FG_BRIGHT_MAGENTA, "Magenta"),
+            Color("█", FG_BRIGHT_CYAN, "Cyan")
+        };
+        
+        // Draw each face with its UV coordinates
+        for (size_t f = 0; f < faces.size(); f++) {
+            const Face& face = faces[f];
+            const Color& faceColor = faceColors[f % 6];
+            
+            // Draw the face outlines in the UV texture
+            for (size_t i = 0; i < face.vertexIndices.size(); i++) {
+                int nextI = (i + 1) % face.vertexIndices.size();
+                int uvIdx1 = face.uvIndices[i];
+                int uvIdx2 = face.uvIndices[nextI];
+                
+                // Get UV coordinates
+                const UV& uv1 = uvs[uvIdx1];
+                const UV& uv2 = uvs[uvIdx2];
+                
+                // Convert to texture coordinates
+                int x1 = static_cast<int>(uv1.u * (width - 1));
+                int y1 = static_cast<int>((1.0f - uv1.v) * (height - 1)); // flip y for texture space
+                int x2 = static_cast<int>(uv2.u * (width - 1));
+                int y2 = static_cast<int>((1.0f - uv2.v) * (height - 1));
+                
+                // Draw a line between the points
+                drawLine(texture, x1, y1, x2, y2, faceColor);
+            }
+            
+            // Fill the face with a semi-transparent color
+            // Find the center of the face in UV space
+            float centerU = 0.0f, centerV = 0.0f;
+            for (size_t i = 0; i < face.uvIndices.size(); i++) {
+                const UV& uv = uvs[face.uvIndices[i]];
+                centerU += uv.u;
+                centerV += uv.v;
+            }
+            centerU /= face.uvIndices.size();
+            centerV /= face.uvIndices.size();
+            
+            // Convert to texture coordinates
+            int centerX = static_cast<int>(centerU * (width - 1));
+            int centerY = static_cast<int>((1.0f - centerV) * (height - 1));
+            
+            // Draw a small marker at the center
+            texture.paint(centerX, centerY, faceColor, 0.5f, 0.7f);
+        }
+    }
+    
+    // Apply a simple planar UV unwrapping on a selected face
+    void applyPlanarUnwrap(int faceIndex, float scaleU = 1.0f, float scaleV = 1.0f, float offsetU = 0.0f, float offsetV = 0.0f) {
+        if (faceIndex < 0 || faceIndex >= static_cast<int>(faces.size())) {
+            std::cerr << FG_BRIGHT_RED << "⚠ " << "Invalid face index for UV unwrapping" << RESET << std::endl;
+            return;
+        }
+        
+        Face& face = faces[faceIndex];
+        
+        // Find the normal of the face
+        int v0Idx = face.vertexIndices[0];
+        int v1Idx = face.vertexIndices[1];
+        int v2Idx = face.vertexIndices[2];
+        
+        Vertex v0 = vertices[v0Idx];
+        Vertex v1 = vertices[v1Idx];
+        Vertex v2 = vertices[v2Idx];
+        
+        // Calculate face normal (simplified)
+        Vertex edge1(v1.x - v0.x, v1.y - v0.y, v1.z - v0.z);
+        Vertex edge2(v2.x - v0.x, v2.y - v0.y, v2.z - v0.z);
+        Vertex normal(
+            edge1.y * edge2.z - edge1.z * edge2.y,
+            edge1.z * edge2.x - edge1.x * edge2.z,
+            edge1.x * edge2.y - edge1.y * edge2.x
+        );
+        
+        // Normalize the normal
+        float length = std::sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+        normal.x /= length;
+        normal.y /= length;
+        normal.z /= length;
+        
+        // Determine the primary projection plane based on the normal
+        char primaryAxis = 'y'; // Default to y-axis
+        float absX = std::abs(normal.x);
+        float absY = std::abs(normal.y);
+        float absZ = std::abs(normal.z);
+        
+        if (absX >= absY && absX >= absZ) {
+            primaryAxis = 'x';
+        } else if (absY >= absX && absY >= absZ) {
+            primaryAxis = 'y';
+        } else {
+            primaryAxis = 'z';
+        }
+        
+        // Create new UVs based on the projection
+        for (size_t i = 0; i < face.vertexIndices.size(); i++) {
+            int vertIdx = face.vertexIndices[i];
+            const Vertex& vert = vertices[vertIdx];
+            
+            float u = 0.0f, v = 0.0f;
+            
+            // Project based on primary axis
+            switch (primaryAxis) {
+                case 'x':
+                    u = vert.z;
+                    v = vert.y;
+                    break;
+                case 'y':
+                    u = vert.x;
+                    v = vert.z;
+                    break;
+                case 'z':
+                    u = vert.x;
+                    v = vert.y;
+                    break;
+            }
+            
+            // Apply scaling and offset
+            u = u * scaleU + offsetU;
+            v = v * scaleV + offsetV;
+            
+            // Create a new UV or update existing
+            if (i < face.uvIndices.size() && face.uvIndices[i] < uvs.size()) {
+                // Update existing UV
+                uvs[face.uvIndices[i]] = UV(u, v);
+            } else {
+                // Create new UV
+                uvs.push_back(UV(u, v));
+                if (i < face.uvIndices.size()) {
+                    face.uvIndices[i] = uvs.size() - 1;
+                } else {
+                    face.uvIndices.push_back(uvs.size() - 1);
+                }
+            }
+        }
+        
+        std::cout << FG_BRIGHT_GREEN << "✓ " << "Applied planar unwrap to face " << faceIndex << RESET << std::endl;
+    }
+    
+    // Draw a line between two points using Bresenham's algorithm
+    void drawLine(Texture& texture, int x1, int y1, int x2, int y2, const Color& color) const {
+        int dx = abs(x2 - x1);
+        int dy = abs(y2 - y1);
+        int sx = (x1 < x2) ? 1 : -1;
+        int sy = (y1 < y2) ? 1 : -1;
+        int err = dx - dy;
+        
+        while (true) {
+            texture.paint(x1, y1, color, 0.5f, 0.7f);
+            
+            if (x1 == x2 && y1 == y2) break;
+            
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                x1 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y1 += sy;
+            }
+        }
+    }
+    
+    // Run a simple unwrapping algorithm for all faces
+    void unwrapUVs() {
+        float uScale = 0.1f;
+        float vScale = 0.1f;
+        float uOffset = 0.25f;
+        float vOffset = 0.25f;
+        
+        for (size_t i = 0; i < faces.size(); i++) {
+            // Apply a slightly different offset for each face
+            float faceUOffset = uOffset + (i % 3) * 0.2f;
+            float faceVOffset = vOffset + (i / 3) * 0.2f;
+            
+            applyPlanarUnwrap(i, uScale, vScale, faceUOffset, faceVOffset);
+        }
+        
+        std::cout << FG_BRIGHT_GREEN << "✓ " << "Applied UV unwrapping to all faces" << RESET << std::endl;
+    }
+    
+    // Getters for model data
     bool isLoaded() const { return loaded; }
+    const std::string& getName() const { return modelName; }
+    int getVertexCount() const { return vertices.size(); }
+    int getFaceCount() const { return faces.size(); }
+    int getUVCount() const { return uvs.size(); }
     
 private:
     bool loaded;
+    std::string modelName;
+    std::vector<Vertex> vertices;
+    std::vector<UV> uvs;
+    std::vector<Face> faces;
 };
 
 class Project {
@@ -1049,6 +1611,768 @@ public:
         colorPalette['0'] = Color(" ", RESET, "Eraser");
     }
     
+    // Interactive color wheel with harmony suggestions
+    void showColorWheel() {
+        clearScreen();
+        
+        std::cout << BOLD << BG_BRIGHT_BLUE << FG_BRIGHT_WHITE 
+                  << "           INTERACTIVE COLOR WHEEL           " 
+                  << RESET << std::endl << std::endl;
+        
+        // Convert current color to HSV for the wheel
+        HSV currentColor(0, 1.0f, 1.0f); // Default: Red
+        
+        // If we have a current tool with color, use that
+        if (currentTool) {
+            // Extract ANSI code and try to determine HSV values
+            std::string colorCode = currentTool->getColor().code;
+            
+            // Map common ANSI colors to HSV values
+            if (colorCode == FG_BRIGHT_RED || colorCode == FG_RED)
+                currentColor = HSV(0, 1.0f, 1.0f);
+            else if (colorCode == FG_BRIGHT_GREEN || colorCode == FG_GREEN)
+                currentColor = HSV(120, 1.0f, 1.0f);
+            else if (colorCode == FG_BRIGHT_BLUE || colorCode == FG_BLUE)
+                currentColor = HSV(240, 1.0f, 1.0f);
+            else if (colorCode == FG_BRIGHT_YELLOW || colorCode == FG_YELLOW)
+                currentColor = HSV(60, 1.0f, 1.0f);
+            else if (colorCode == FG_BRIGHT_MAGENTA || colorCode == FG_MAGENTA)
+                currentColor = HSV(300, 1.0f, 1.0f);
+            else if (colorCode == FG_BRIGHT_CYAN || colorCode == FG_CYAN)
+                currentColor = HSV(180, 1.0f, 1.0f);
+            else if (colorCode == FG_BRIGHT_WHITE || colorCode == FG_WHITE)
+                currentColor = HSV(0, 0.0f, 1.0f);
+        }
+        
+        bool colorUpdated = false;
+        
+        // Interactive loop for color wheel navigation
+        do {
+            colorUpdated = false;
+            
+            // Current color info
+            RGB rgbColor = currentColor.toRGB();
+            std::string ansiColor = rgbColor.toAnsiColor();
+            std::string colorName = rgbColor.getColorName();
+            
+            std::cout << BOLD << "Current Color: " << ansiColor << "███" << RESET << " (HSV: " 
+                      << std::fixed << std::setprecision(0) << currentColor.h << "°, " 
+                      << std::setprecision(2) << currentColor.s * 100 << "%, " 
+                      << currentColor.v * 100 << "%)" << std::endl;
+            std::cout << "Name: " << colorName << std::endl << std::endl;
+            
+            // ASCII color wheel representation
+            const int radius = 10;
+            
+            // Draw the color wheel
+            for (int y = -radius; y <= radius; y++) {
+                std::cout << "  ";
+                for (int x = -radius; x <= radius; x++) {
+                    // Calculate distance from center
+                    float distance = std::sqrt(x*x + y*y);
+                    
+                    if (distance <= radius) {
+                        // Calculate angle (hue) and convert to degrees
+                        float angle = std::atan2(y, x) * 180.0f / M_PI;
+                        if (angle < 0) angle += 360.0f;
+                        
+                        // Calculate saturation based on distance from center
+                        float saturation = distance / radius;
+                        
+                        // Create HSV color and convert to RGB
+                        HSV pointColor(angle, saturation, 1.0f);
+                        RGB rgb = pointColor.toRGB();
+                        std::string color = rgb.toAnsiColor();
+                        
+                        // Mark the current selected color
+                        float angleDiff = std::abs(angle - currentColor.h);
+                        if (angleDiff > 180) angleDiff = 360 - angleDiff;
+                        
+                        float satDiff = std::abs(saturation - currentColor.s);
+                        
+                        if (angleDiff < 15 && satDiff < 0.2) {
+                            std::cout << color << "◉" << RESET;
+                        } else {
+                            std::cout << color << "●" << RESET;
+                        }
+                    } else {
+                        std::cout << " ";
+                    }
+                }
+                std::cout << std::endl;
+            }
+            
+            std::cout << std::endl;
+            
+            // Color harmony suggestions
+            std::cout << BOLD << FG_GREEN << "Color Harmony Suggestions:" << RESET << std::endl;
+            
+            // Complementary
+            HSV complementary = currentColor.complementary();
+            RGB compRgb = complementary.toRGB();
+            std::cout << "  " << FG_BRIGHT_YELLOW << "1" << RESET << " - Complementary: " 
+                      << compRgb.toAnsiColor() << "███" << RESET << " (" 
+                      << std::fixed << std::setprecision(0) << complementary.h << "°)" << std::endl;
+            
+            // Analogous
+            std::vector<HSV> analogous = currentColor.analogous();
+            std::cout << "  " << FG_BRIGHT_YELLOW << "2" << RESET << " - Analogous: ";
+            for (const auto& color : analogous) {
+                RGB rgb = color.toRGB();
+                std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
+            }
+            std::cout << std::endl;
+            
+            // Triadic
+            std::vector<HSV> triadic = currentColor.triadic();
+            std::cout << "  " << FG_BRIGHT_YELLOW << "3" << RESET << " - Triadic: ";
+            for (const auto& color : triadic) {
+                RGB rgb = color.toRGB();
+                std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
+            }
+            std::cout << std::endl;
+            
+            // Split Complementary
+            std::vector<HSV> splitComp = currentColor.splitComplementary();
+            std::cout << "  " << FG_BRIGHT_YELLOW << "4" << RESET << " - Split Complementary: ";
+            for (const auto& color : splitComp) {
+                RGB rgb = color.toRGB();
+                std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
+            }
+            std::cout << std::endl;
+            
+            // Tetradic (Rectangle)
+            std::vector<HSV> tetradic = currentColor.tetradic();
+            std::cout << "  " << FG_BRIGHT_YELLOW << "5" << RESET << " - Tetradic: ";
+            for (const auto& color : tetradic) {
+                RGB rgb = color.toRGB();
+                std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
+            }
+            std::cout << std::endl;
+            
+            // Controls
+            std::cout << std::endl;
+            std::cout << BOLD << FG_GREEN << "Controls:" << RESET << std::endl;
+            std::cout << "  " << FG_BRIGHT_YELLOW << "1-5" << RESET << "      Select a harmony color" << std::endl;
+            std::cout << "  " << FG_BRIGHT_YELLOW << "w/a/s/d" << RESET << "  Navigate the color wheel" << std::endl;
+            std::cout << "  " << FG_BRIGHT_YELLOW << "+/-" << RESET << "      Adjust saturation" << std::endl;
+            std::cout << "  " << FG_BRIGHT_YELLOW << "<, >" << RESET << "     Adjust brightness" << std::endl;
+            std::cout << "  " << FG_BRIGHT_YELLOW << "enter" << RESET << "    Select current color" << std::endl;
+            std::cout << "  " << FG_BRIGHT_YELLOW << "q" << RESET << "        Return without changes" << std::endl;
+            
+            // Get user input for color wheel navigation
+            std::cout << std::endl;
+            std::cout << "Enter command: ";
+            std::string input;
+            std::getline(std::cin, input);
+            
+            if (input.empty() || input == "enter") {
+                // Apply the selected color to the current tool
+                RGB selectedRgb = currentColor.toRGB();
+                std::string ansiCode = selectedRgb.toAnsiColor();
+                std::string name = selectedRgb.getColorName();
+                
+                if (currentTool) {
+                    // Create a new color with the selected ANSI code but keep the current symbol
+                    std::string symbol = currentTool->getColor().symbol;
+                    Color newColor(symbol, ansiCode, name);
+                    currentTool->setColor(newColor);
+                    
+                    std::cout << FG_BRIGHT_GREEN << "✓ " << "Applied new color: " 
+                              << ansiCode << "███" << RESET << " to " 
+                              << currentTool->getName() << std::endl;
+                }
+                
+                return; // Exit the color wheel
+            }
+            
+            if (input == "q") {
+                return; // Cancel and return
+            }
+            
+            // Handle numeric inputs for harmony selections
+            if (input == "1") {
+                // Complementary
+                currentColor = complementary;
+                colorUpdated = true;
+            } else if (input == "2" && !analogous.empty()) {
+                // First analogous color
+                currentColor = analogous[0];
+                colorUpdated = true;
+            } else if (input == "3" && !triadic.empty()) {
+                // First triadic color
+                currentColor = triadic[0];
+                colorUpdated = true;
+            } else if (input == "4" && !splitComp.empty()) {
+                // First split complementary color
+                currentColor = splitComp[0];
+                colorUpdated = true;
+            } else if (input == "5" && !tetradic.empty()) {
+                // First tetradic color
+                currentColor = tetradic[0];
+                colorUpdated = true;
+            } else if (input == "w") {
+                // Move up (decrease hue)
+                currentColor.h = std::fmod(currentColor.h - 15 + 360, 360);
+                colorUpdated = true;
+            } else if (input == "s") {
+                // Move down (increase hue)
+                currentColor.h = std::fmod(currentColor.h + 15, 360);
+                colorUpdated = true;
+            } else if (input == "a") {
+                // Move left (decrease saturation)
+                currentColor.s = std::max(0.0f, currentColor.s - 0.1f);
+                colorUpdated = true;
+            } else if (input == "d") {
+                // Move right (increase saturation)
+                currentColor.s = std::min(1.0f, currentColor.s + 0.1f);
+                colorUpdated = true;
+            } else if (input == "+") {
+                // Increase saturation
+                currentColor.s = std::min(1.0f, currentColor.s + 0.1f);
+                colorUpdated = true;
+            } else if (input == "-") {
+                // Decrease saturation
+                currentColor.s = std::max(0.0f, currentColor.s - 0.1f);
+                colorUpdated = true;
+            } else if (input == "<") {
+                // Decrease value
+                currentColor.v = std::max(0.0f, currentColor.v - 0.1f);
+                colorUpdated = true;
+            } else if (input == ">") {
+                // Increase value
+                currentColor.v = std::min(1.0f, currentColor.v + 0.1f);
+                colorUpdated = true;
+            }
+            
+            // Clear screen for next iteration
+            if (colorUpdated) {
+                clearScreen();
+            }
+            
+        } while (colorUpdated);
+    }
+    
+    // UV Unwrapping and editing tools UI
+    void showUVEditor() {
+        clearScreen();
+        
+        std::cout << BOLD << BG_BRIGHT_BLUE << FG_BRIGHT_WHITE 
+                  << "            UV UNWRAPPING TOOLS             " 
+                  << RESET << std::endl << std::endl;
+        
+        if (!project.getModel().isLoaded()) {
+            std::cout << FG_BRIGHT_RED << "⚠ " << "No model loaded. Please load a 3D model first." << RESET << std::endl;
+            std::cout << std::endl << "Press any key to continue..." << std::endl;
+            std::cin.get();
+            return;
+        }
+        
+        // Display model info
+        const Model& model = project.getModel();
+        std::cout << BOLD << "Model: " << FG_BRIGHT_CYAN << model.getName() << RESET << std::endl;
+        std::cout << "Vertices: " << FG_BRIGHT_YELLOW << model.getVertexCount() << RESET 
+                  << " | Faces: " << FG_BRIGHT_YELLOW << model.getFaceCount() << RESET
+                  << " | UVs: " << FG_BRIGHT_YELLOW << model.getUVCount() << RESET << std::endl << std::endl;
+        
+        // Create a new layer for displaying UV map if needed
+        Layer* uvLayer = nullptr;
+        for (int i = 0; i < project.getLayerCount(); i++) {
+            Layer* layer = project.getLayer(i);
+            if (layer && layer->getName() == "UV Map") {
+                uvLayer = layer;
+                break;
+            }
+        }
+        
+        if (!uvLayer) {
+            uvLayer = project.addLayer("UV Map");
+            std::cout << FG_BRIGHT_GREEN << "✓ " << "Created new layer for UV Map" << RESET << std::endl;
+        }
+        
+        // Generate UV map visualization
+        std::cout << FG_BRIGHT_MAGENTA << "⧗ " << "Generating UV map visualization..." << RESET << std::endl;
+        model.generateUVMap(*uvLayer);
+        
+        // Display the UV map
+        std::cout << BOLD << FG_BRIGHT_CYAN << "+================ UV MAP ================+" << RESET << std::endl;
+        uvLayer->render();
+        std::cout << BOLD << FG_BRIGHT_CYAN << "+=======================================+" << RESET << std::endl << std::endl;
+        
+        // Show unwrapping options
+        std::cout << BOLD << FG_GREEN << "Unwrapping Options:" << RESET << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "1" << RESET << " - Apply planar unwrap to selected face" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "2" << RESET << " - Apply automatic unwrap to all faces" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "3" << RESET << " - Reset unwrap to default" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "q" << RESET << " - Return to main menu" << std::endl;
+        
+        bool stayInUVEditor = true;
+        while (stayInUVEditor) {
+            std::cout << std::endl << "Enter command: ";
+            std::string input;
+            std::getline(std::cin, input);
+            
+            if (input == "q") {
+                stayInUVEditor = false;
+            } else if (input == "1") {
+                // Apply planar unwrap to a face
+                std::cout << "Enter face index (0-" << model.getFaceCount() - 1 << "): ";
+                std::string faceIndexStr;
+                std::getline(std::cin, faceIndexStr);
+                
+                try {
+                    int faceIndex = std::stoi(faceIndexStr);
+                    
+                    // Apply unwrap
+                    const_cast<Model&>(model).applyPlanarUnwrap(faceIndex, 0.1f, 0.1f, 0.25f, 0.25f);
+                    
+                    // Regenerate UV map
+                    std::cout << FG_BRIGHT_MAGENTA << "⧗ " << "Regenerating UV map..." << RESET << std::endl;
+                    model.generateUVMap(*uvLayer);
+                    
+                    // Show updated UV map
+                    std::cout << BOLD << FG_BRIGHT_CYAN << "+================ UPDATED UV MAP ================+" << RESET << std::endl;
+                    uvLayer->render();
+                    std::cout << BOLD << FG_BRIGHT_CYAN << "+=======================================+" << RESET << std::endl;
+                } catch (const std::exception& e) {
+                    std::cout << FG_BRIGHT_RED << "⚠ " << "Invalid face index. Please try again." << RESET << std::endl;
+                }
+            } else if (input == "2") {
+                // Apply automatic unwrap to all faces
+                std::cout << FG_BRIGHT_MAGENTA << "⧗ " << "Applying automatic UV unwrapping..." << RESET << std::endl;
+                
+                // Apply unwrap
+                const_cast<Model&>(model).unwrapUVs();
+                
+                // Regenerate UV map
+                model.generateUVMap(*uvLayer);
+                
+                // Show updated UV map
+                std::cout << BOLD << FG_BRIGHT_CYAN << "+================ UPDATED UV MAP ================+" << RESET << std::endl;
+                uvLayer->render();
+                std::cout << BOLD << FG_BRIGHT_CYAN << "+=======================================+" << RESET << std::endl;
+            } else if (input == "3") {
+                // Reset unwrap to default
+                std::cout << FG_BRIGHT_MAGENTA << "⧗ " << "Resetting UV unwrapping..." << RESET << std::endl;
+                
+                // Reset by recreating the demo model
+                const_cast<Model&>(model).createDemoModel();
+                
+                // Regenerate UV map
+                model.generateUVMap(*uvLayer);
+                
+                // Show updated UV map
+                std::cout << BOLD << FG_BRIGHT_CYAN << "+================ UPDATED UV MAP ================+" << RESET << std::endl;
+                uvLayer->render();
+                std::cout << BOLD << FG_BRIGHT_CYAN << "+=======================================+" << RESET << std::endl;
+            } else {
+                std::cout << FG_BRIGHT_RED << "⚠ " << "Unknown command. Please try again." << RESET << std::endl;
+            }
+        }
+    }
+    
+    // Display the interactive color wheel
+    void showColorWheel() {
+        clearScreen();
+        bool colorUpdated = false;
+        HSV currentColor = currentHsvColor;
+        
+        std::cout << BOLD << BG_BRIGHT_BLUE << FG_BRIGHT_WHITE 
+                  << "               COLOR WHEEL WITH HARMONY               " 
+                  << RESET << std::endl << std::endl;
+        
+        // Current color info
+        RGB rgbColor = currentColor.toRGB();
+        std::string ansiColor = rgbColor.toAnsiColor();
+        std::string colorName = rgbColor.getColorName();
+        
+        std::cout << BOLD << "Current Color: " << ansiColor << "███" << RESET << " (HSV: " 
+                  << std::fixed << std::setprecision(0) << currentColor.h << "°, " 
+                  << std::setprecision(2) << currentColor.s * 100 << "%, " 
+                  << currentColor.v * 100 << "%)" << std::endl;
+        std::cout << "Name: " << colorName << std::endl << std::endl;
+        
+        // ASCII color wheel representation
+        const int radius = 10;
+        const int wheelSize = radius * 2 + 1;
+        
+        // Draw the color wheel
+        for (int y = -radius; y <= radius; y++) {
+            std::cout << "  ";
+            for (int x = -radius; x <= radius; x++) {
+                // Calculate distance from center
+                float distance = std::sqrt(x*x + y*y);
+                
+                if (distance <= radius) {
+                    // Calculate angle (hue) and convert to degrees
+                    float angle = std::atan2(y, x) * 180.0f / M_PI;
+                    if (angle < 0) angle += 360.0f;
+                    
+                    // Calculate saturation based on distance from center
+                    float saturation = distance / radius;
+                    
+                    // Create HSV color and convert to RGB
+                    HSV pointColor(angle, saturation, 1.0f);
+                    RGB rgb = pointColor.toRGB();
+                    std::string color = rgb.toAnsiColor();
+                    
+                    // Mark the current selected color
+                    float angleDiff = std::abs(angle - currentColor.h);
+                    if (angleDiff > 180) angleDiff = 360 - angleDiff;
+                    
+                    float satDiff = std::abs(saturation - currentColor.s);
+                    
+                    if (angleDiff < 15 && satDiff < 0.2) {
+                        std::cout << color << "◉" << RESET;
+                    } else {
+                        std::cout << color << "●" << RESET;
+                    }
+                } else {
+                    std::cout << " ";
+                }
+            }
+            std::cout << std::endl;
+        }
+        
+        std::cout << std::endl;
+        
+        // Color harmony suggestions
+        std::cout << BOLD << FG_GREEN << "Color Harmony Suggestions:" << RESET << std::endl;
+        
+        // Complementary
+        HSV complementary = currentColor.complementary();
+        RGB compRgb = complementary.toRGB();
+        std::cout << "  " << FG_BRIGHT_YELLOW << "1" << RESET << " - Complementary: " 
+                  << compRgb.toAnsiColor() << "███" << RESET << " (" 
+                  << std::fixed << std::setprecision(0) << complementary.h << "°)" << std::endl;
+        
+        // Analogous
+        std::vector<HSV> analogous = currentColor.analogous();
+        std::cout << "  " << FG_BRIGHT_YELLOW << "2" << RESET << " - Analogous: ";
+        for (const auto& color : analogous) {
+            RGB rgb = color.toRGB();
+            std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
+        }
+        std::cout << std::endl;
+        
+        // Triadic
+        std::vector<HSV> triadic = currentColor.triadic();
+        std::cout << "  " << FG_BRIGHT_YELLOW << "3" << RESET << " - Triadic: ";
+        for (const auto& color : triadic) {
+            RGB rgb = color.toRGB();
+            std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
+        }
+        std::cout << std::endl;
+        
+        // Split Complementary
+        std::vector<HSV> splitComp = currentColor.splitComplementary();
+        std::cout << "  " << FG_BRIGHT_YELLOW << "4" << RESET << " - Split Complementary: ";
+        for (const auto& color : splitComp) {
+            RGB rgb = color.toRGB();
+            std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
+        }
+        std::cout << std::endl;
+        
+        // Tetradic (Rectangle)
+        std::vector<HSV> tetradic = currentColor.tetradic();
+        std::cout << "  " << FG_BRIGHT_YELLOW << "5" << RESET << " - Tetradic: ";
+        for (const auto& color : tetradic) {
+            RGB rgb = color.toRGB();
+            std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
+        }
+        std::cout << std::endl;
+        
+        // Controls
+        std::cout << std::endl;
+        std::cout << BOLD << FG_GREEN << "Controls:" << RESET << std::endl;
+        std::cout << "  Type " << FG_BRIGHT_YELLOW << "up/down/left/right" << RESET << " to move around the color wheel" << std::endl;
+        std::cout << "  Type " << FG_BRIGHT_YELLOW << "1-5" << RESET << " to select a harmony color" << std::endl;
+        std::cout << "  Type " << FG_BRIGHT_YELLOW << "+/-" << RESET << " to adjust saturation" << std::endl;
+        std::cout << "  Type " << FG_BRIGHT_YELLOW << "</>" << RESET << " to adjust value (brightness)" << std::endl;
+        std::cout << "  Press " << FG_BRIGHT_YELLOW << "Enter" << RESET << " to select current color and return" << std::endl;
+        std::cout << "  Type " << FG_BRIGHT_YELLOW << "q" << RESET << " to cancel and return" << std::endl;
+        
+        // Get user input for color wheel navigation
+        std::cout << std::endl;
+        std::cout << "Use arrow keys to navigate, or enter command: ";
+        std::string input;
+        std::getline(std::cin, input);
+        
+        if (input.empty()) {
+            // Return with current color selected
+            currentHsvColor = currentColor;
+            
+            // Update the current tool color
+            if (currentTool) {
+                RGB toolRgb = currentColor.toRGB();
+                std::string ansiCode = toolRgb.toAnsiColor();
+                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, colorName));
+                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
+                          << "███" << RESET << " " << colorName << std::endl;
+            }
+            return;
+        } else if (input == "q" || input == "Q") {
+            // Cancel and return
+            return;
+        }
+        
+        // Handle user input
+        if (input == "1") {
+            // Complementary
+            currentHsvColor = complementary;
+            
+            // Update the current tool color
+            if (currentTool) {
+                RGB toolRgb = currentHsvColor.toRGB();
+                std::string ansiCode = toolRgb.toAnsiColor();
+                std::string newColorName = toolRgb.getColorName();
+                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
+                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
+                          << "███" << RESET << " " << newColorName << std::endl;
+            }
+        } else if (input == "2" && !analogous.empty()) {
+            // First analogous color
+            currentHsvColor = analogous[0];
+            
+            // Update the current tool color
+            if (currentTool) {
+                RGB toolRgb = currentHsvColor.toRGB();
+                std::string ansiCode = toolRgb.toAnsiColor();
+                std::string newColorName = toolRgb.getColorName();
+                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
+                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
+                          << "███" << RESET << " " << newColorName << std::endl;
+            }
+        } else if (input == "3" && !triadic.empty()) {
+            // First triadic color
+            currentHsvColor = triadic[0];
+            
+            // Update the current tool color
+            if (currentTool) {
+                RGB toolRgb = currentHsvColor.toRGB();
+                std::string ansiCode = toolRgb.toAnsiColor();
+                std::string newColorName = toolRgb.getColorName();
+                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
+                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
+                          << "███" << RESET << " " << newColorName << std::endl;
+            }
+        } else if (input == "4" && !splitComp.empty()) {
+            // First split complementary color
+            currentHsvColor = splitComp[0];
+            
+            // Update the current tool color
+            if (currentTool) {
+                RGB toolRgb = currentHsvColor.toRGB();
+                std::string ansiCode = toolRgb.toAnsiColor();
+                std::string newColorName = toolRgb.getColorName();
+                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
+                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
+                          << "███" << RESET << " " << newColorName << std::endl;
+            }
+        } else if (input == "5" && !tetradic.empty()) {
+            // First tetradic color
+            currentHsvColor = tetradic[0];
+            
+            // Update the current tool color
+            if (currentTool) {
+                RGB toolRgb = currentHsvColor.toRGB();
+                std::string ansiCode = toolRgb.toAnsiColor();
+                std::string newColorName = toolRgb.getColorName();
+                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
+                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
+                          << "███" << RESET << " " << newColorName << std::endl;
+            }
+        } else if (input == "up" || input == "w") {
+            // Move up (decrease hue)
+            currentColor.h = std::fmod(currentColor.h - 15 + 360, 360);
+            showColorWheel(); // Recursively call to show updated wheel
+        } else if (input == "down" || input == "s") {
+            // Move down (increase hue)
+            currentColor.h = std::fmod(currentColor.h + 15, 360);
+            showColorWheel(); // Recursively call to show updated wheel
+        } else if (input == "left" || input == "a") {
+            // Move left (decrease saturation)
+            currentColor.s = std::max(0.0f, currentColor.s - 0.1f);
+            showColorWheel(); // Recursively call to show updated wheel
+        } else if (input == "right" || input == "d") {
+            // Move right (increase saturation)
+            currentColor.s = std::min(1.0f, currentColor.s + 0.1f);
+            showColorWheel(); // Recursively call to show updated wheel
+        } else if (input == "+") {
+            // Increase saturation
+            currentColor.s = std::min(1.0f, currentColor.s + 0.1f);
+            showColorWheel(); // Recursively call to show updated wheel
+        } else if (input == "-") {
+            // Decrease saturation
+            currentColor.s = std::max(0.0f, currentColor.s - 0.1f);
+            showColorWheel(); // Recursively call to show updated wheel
+        } else if (input == "<") {
+            // Decrease value
+            currentColor.v = std::max(0.0f, currentColor.v - 0.1f);
+            showColorWheel(); // Recursively call to show updated wheel
+        } else if (input == ">") {
+            // Increase value
+            currentColor.v = std::min(1.0f, currentColor.v + 0.1f);
+            showColorWheel(); // Recursively call to show updated wheel
+        } else {
+            // Unknown command - show the wheel again
+            showColorWheel();
+        }
+    }
+    
+    // Display UV Unwrapping Tools
+    void showUVTools() {
+        clearScreen();
+        
+        std::cout << BOLD << BG_BRIGHT_BLUE << FG_BRIGHT_WHITE 
+                  << "             UV UNWRAPPING AND EDITING             " 
+                  << RESET << std::endl << std::endl;
+        
+        // Check if a model is loaded
+        if (!project.getModel().isLoaded()) {
+            std::cout << FG_BRIGHT_RED << "⚠ " << "No model loaded! Please load a model first with 'm' command." << RESET << std::endl;
+            std::cout << std::endl << "Press Enter to return...";
+            std::cin.get();
+            return;
+        }
+        
+        // Show model information
+        const Model& model = project.getModel();
+        std::cout << BOLD << "Model: " << FG_BRIGHT_CYAN << model.getName() << RESET << std::endl;
+        std::cout << "Vertices: " << FG_BRIGHT_YELLOW << model.getVertexCount() << RESET << std::endl;
+        std::cout << "Faces: " << FG_BRIGHT_YELLOW << model.getFaceCount() << RESET << std::endl;
+        std::cout << "UV Coordinates: " << FG_BRIGHT_YELLOW << model.getUVCount() << RESET << std::endl << std::endl;
+        
+        // Create a texture for displaying the UV map
+        Layer* currentLayer = project.getCurrentLayer();
+        if (!currentLayer) {
+            std::cout << FG_BRIGHT_RED << "⚠ " << "No active layer! Please create a layer first." << RESET << std::endl;
+            std::cout << std::endl << "Press Enter to return...";
+            std::cin.get();
+            return;
+        }
+        
+        // Generate and display UV map
+        std::cout << BOLD << FG_BRIGHT_MAGENTA << "UV Map:" << RESET << std::endl;
+        
+        // Generate UV map on current layer texture
+        model.generateUVMap(currentLayer->getTexture());
+        
+        // Display the UV map
+        currentLayer->render(true);
+        
+        // Show UV editing options
+        std::cout << std::endl;
+        std::cout << BOLD << FG_GREEN << "UV Unwrapping Options:" << RESET << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "u" << RESET << " - Apply automatic unwrapping to all faces" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "p [face_index]" << RESET << " - Apply planar unwrapping to specific face" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "s [scale] [offset]" << RESET << " - Adjust UV scale and offset" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "r" << RESET << " - Reset UV coordinates" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "q" << RESET << " - Return to main menu" << std::endl;
+        
+        // Get user input
+        std::cout << std::endl;
+        std::cout << "Enter command: ";
+        std::string command;
+        std::getline(std::cin, command);
+        
+        // Process command
+        if (command.empty() || command == "q" || command == "Q") {
+            // Return to main menu
+            return;
+        } else if (command == "u" || command == "U") {
+            // Apply automatic unwrapping
+            std::cout << FG_BRIGHT_CYAN << "⧗ " << "Applying automatic unwrapping..." << RESET << std::endl;
+            Model& mutableModel = const_cast<Model&>(model);
+            mutableModel.unwrapUVs();
+            
+            // Regenerate and display the UV map
+            mutableModel.generateUVMap(currentLayer->getTexture());
+            currentLayer->render(true);
+            
+            std::cout << FG_BRIGHT_GREEN << "✓ " << "Unwrapping applied!" << RESET << std::endl;
+            std::cout << std::endl << "Press Enter to continue...";
+            std::cin.get();
+            
+            // Show the UV tools menu again
+            showUVTools();
+        } else if (command[0] == 'p' || command[0] == 'P') {
+            // Parse face index
+            int faceIndex = -1;
+            if (sscanf(command.c_str() + 1, "%d", &faceIndex) == 1) {
+                // Apply planar unwrapping to specific face
+                std::cout << FG_BRIGHT_CYAN << "⧗ " << "Applying planar unwrapping to face " << faceIndex << "..." << RESET << std::endl;
+                Model& mutableModel = const_cast<Model&>(model);
+                mutableModel.applyPlanarUnwrap(faceIndex);
+                
+                // Regenerate and display the UV map
+                mutableModel.generateUVMap(currentLayer->getTexture());
+                currentLayer->render(true);
+                
+                std::cout << FG_BRIGHT_GREEN << "✓ " << "Planar unwrapping applied to face " << faceIndex << "!" << RESET << std::endl;
+            } else {
+                std::cout << FG_BRIGHT_RED << "⚠ " << "Invalid face index! Format: p [face_index]" << RESET << std::endl;
+            }
+            
+            std::cout << std::endl << "Press Enter to continue...";
+            std::cin.get();
+            
+            // Show the UV tools menu again
+            showUVTools();
+        } else if (command[0] == 's' || command[0] == 'S') {
+            // Parse scale and offset
+            float scale = 1.0f, offset = 0.0f;
+            if (sscanf(command.c_str() + 1, "%f %f", &scale, &offset) == 2) {
+                // Apply scale and offset to all faces
+                std::cout << FG_BRIGHT_CYAN << "⧗ " << "Adjusting UV scale to " << scale << " and offset to " << offset << "..." << RESET << std::endl;
+                Model& mutableModel = const_cast<Model&>(model);
+                
+                // Apply to all faces
+                for (int i = 0; i < mutableModel.getFaceCount(); i++) {
+                    mutableModel.applyPlanarUnwrap(i, scale, scale, offset, offset);
+                }
+                
+                // Regenerate and display the UV map
+                mutableModel.generateUVMap(currentLayer->getTexture());
+                currentLayer->render(true);
+                
+                std::cout << FG_BRIGHT_GREEN << "✓ " << "UV scale and offset adjusted!" << RESET << std::endl;
+            } else {
+                std::cout << FG_BRIGHT_RED << "⚠ " << "Invalid scale/offset! Format: s [scale] [offset]" << RESET << std::endl;
+            }
+            
+            std::cout << std::endl << "Press Enter to continue...";
+            std::cin.get();
+            
+            // Show the UV tools menu again
+            showUVTools();
+        } else if (command == "r" || command == "R") {
+            // Reset UV coordinates
+            std::cout << FG_BRIGHT_CYAN << "⧗ " << "Resetting UV coordinates..." << RESET << std::endl;
+            Model& mutableModel = const_cast<Model&>(model);
+            mutableModel.createDemoModel(); // Reset to default UVs
+            
+            // Regenerate and display the UV map
+            mutableModel.generateUVMap(currentLayer->getTexture());
+            currentLayer->render(true);
+            
+            std::cout << FG_BRIGHT_GREEN << "✓ " << "UV coordinates reset to default!" << RESET << std::endl;
+            std::cout << std::endl << "Press Enter to continue...";
+            std::cin.get();
+            
+            // Show the UV tools menu again
+            showUVTools();
+        } else {
+            // Unknown command
+            std::cout << FG_BRIGHT_RED << "⚠ " << "Unknown command!" << RESET << std::endl;
+            std::cout << std::endl << "Press Enter to continue...";
+            std::cin.get();
+            
+            // Show the UV tools menu again
+            showUVTools();
+        }
+    }
+
     void showHelp() {
         clearScreen();
         
@@ -1080,6 +2404,7 @@ public:
         }
         
         std::cout << "  " << FG_BRIGHT_YELLOW << "1-9, 0" << RESET << "   Select color (0 = eraser)" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "w" << RESET << "        Open interactive color wheel with harmony suggestions" << std::endl;
         std::cout << BOLD << FG_BRIGHT_MAGENTA << "+=======================================+" << RESET << std::endl << std::endl;
         
         // Painting Commands
@@ -1104,6 +2429,12 @@ public:
         std::cout << "  " << FG_BRIGHT_YELLOW << "xs format filename" << RESET << " Export current layer to format" << std::endl;
         std::cout << "  " << FG_BRIGHT_YELLOW << "xa format filename" << RESET << " Export all visible layers to format" << std::endl;
         std::cout << "  " << FG_BRIGHT_YELLOW << "Format options: txt, ppm, svg, obj" << RESET << std::endl;
+        std::cout << BOLD << FG_BRIGHT_BLUE << "+=======================================+" << RESET << std::endl << std::endl;
+        
+        // Model Operations
+        std::cout << BOLD << FG_BRIGHT_BLUE << "+========== MODEL OPERATIONS ==========+" << RESET << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "m" << RESET << "        Load 3D model from file" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "u" << RESET << "        Open UV unwrapping and editing tools" << std::endl;
         std::cout << BOLD << FG_BRIGHT_BLUE << "+=======================================+" << RESET << std::endl << std::endl;
         
         // Application Controls
@@ -1420,6 +2751,16 @@ public:
                 case 'd':
                 case 'D': {
                     runDemo();
+                    break;
+                }
+                case 'w':
+                case 'W': {
+                    showColorWheel();
+                    break;
+                }
+                case 'u':
+                case 'U': {
+                    showUVEditor();
                     break;
                 }
                 case 'q':
