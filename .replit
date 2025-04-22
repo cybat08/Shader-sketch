@@ -2,6 +2,7 @@ modules = ["cpp"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["cmake", "xorg.libX11", "xorg.libXrandr", "xorg.libXi", "xorg.libXcursor", "xorg.libXinerama", "libGL", "libGLU", "glfw", "glm", "assimp", "glew", "stb", "nlohmann_json", "sfml"]
 
 [workflows]
 runButton = "Project"
@@ -18,6 +19,10 @@ args = "Build and Run 3D Model Painter"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "vnc_3d_model_painter"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Simple 3D Model Painter"
 
 [[workflows.workflow]]
 name = "Build and Run 3D Model Painter"
@@ -46,7 +51,21 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./3DModelPainter"
+args = "cd simple_build && ./SimpleModelPainter"
+
+[[workflows.workflow]]
+name = "Run Simple 3D Model Painter"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd simple_build && ./SimpleModelPainter --demo"
 
 [deployment]
 run = ["sh", "-c", "mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./3DModelPainter"]
