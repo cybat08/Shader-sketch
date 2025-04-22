@@ -40,6 +40,14 @@ args = "Run Interactive Colorful 3D Model Painter"
 task = "workflow.run"
 args = "Run Fun 3D Model Painter"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Enhanced Model Painter"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Enhanced Model Painter Demo"
+
 [[workflows.workflow]]
 name = "Build and Run 3D Model Painter"
 author = "agent"
@@ -138,6 +146,34 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "g++ -std=c++17 FunModelPainter.cpp -o FunModelPainter && ./FunModelPainter"
+
+[[workflows.workflow]]
+name = "Run Enhanced Model Painter"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./EnhancedModelPainter"
+
+[[workflows.workflow]]
+name = "Run Enhanced Model Painter Demo"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./EnhancedModelPainter --demo"
 
 [deployment]
 run = ["sh", "-c", "mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./3DModelPainter"]

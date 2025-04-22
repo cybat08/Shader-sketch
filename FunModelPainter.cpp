@@ -778,6 +778,9 @@ public:
     void setOpacity(float opacity) { this->opacity = opacity; }
     void setName(const std::string& newName) { this->name = newName; }
     
+    // Get reference to the layer's texture
+    Texture& getTexture() { return texture; }
+    
 private:
     std::string name;
     bool visible;
@@ -1975,6 +1978,12 @@ public:
     void showColorWheel() {
         clearScreen();
         bool colorUpdated = false;
+        
+        // Initialize currentHsvColor if it's the first time
+        if (currentHsvColor.h == 0.0f && currentHsvColor.s == 0.0f && currentHsvColor.v == 0.0f) {
+            currentHsvColor = HSV(180.0f, 0.8f, 0.9f);  // Default to a nice cyan
+        }
+        
         HSV currentColor = currentHsvColor;
         
         std::cout << BOLD << BG_BRIGHT_BLUE << FG_BRIGHT_WHITE 
@@ -2760,7 +2769,7 @@ public:
                 }
                 case 'u':
                 case 'U': {
-                    showUVEditor();
+                    showUVTools();
                     break;
                 }
                 case 'q':

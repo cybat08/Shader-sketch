@@ -1,110 +1,110 @@
-# ShaderSketch
+# 3D Model Painter
 
-**ShaderSketch** is a lightweight, experimental C++ 3D painting tool using OpenGL. It allows users to paint directly onto 3D models in real-time with shader-based effects. It's designed to be minimal, modifiable, and cross-platform — ideal for developers exploring procedural shading or real-time texture manipulation.
-
-![3D Model Painter](docs/screenshot.png)
+A powerful C++ desktop application for 3D model painting with advanced interactive tools, intuitive user interface, and comprehensive export capabilities.
 
 ## Features
 
-- Load and visualize 3D models (OBJ and FBX formats)
-- Layer-based painting system
-- Multiple brush tools (Brush, Eraser, LineArt)
-- Adjustable brush size
-- Simple and intuitive interface
+- **Support for multiple 3D model and texture export formats** (OBJ, FBX, SVG, PPM, TXT)
+- **Multi-layer painting system** with advanced brush controls
+- **Comprehensive tool selection** (Brush, Eraser, Spray, Rainbow, Stamp, Pattern)
+- **Interactive color wheel with harmony suggestions** for better color selection
+- **UV unwrapping and editing tools** for precise texture control
+- **Flexible brush size and color controls**
+- **Cross-platform support** for Windows, Linux, and macOS
 
-## Getting Started
+## Installation
 
-### Prerequisites
+### Quick Installation
 
-To build the application from source, you'll need:
+Run the installer script:
 
-- C++ compiler with C++17 support
-- CMake 3.10 or higher
+```bash
+./install.sh
+```
 
-For the full 3D version, you'll also need:
-- OpenGL
-- GLFW
-- GLM
-- Assimp
-- ImGui
+The installer will:
+1. Detect your operating system
+2. Install necessary dependencies
+3. Compile the application
+4. Create shortcuts (on Linux)
+5. Provide usage instructions
 
-### Installation
+### Manual Installation
 
-#### Pre-built Binaries
+If the installer doesn't work for you, follow these steps:
 
-Pre-built binaries are available in the [Releases](https://github.com/yourusername/3D-Model-Painter/releases) section.
-
-#### Building from Source
-
-1. Clone the repository:
+1. Ensure you have C++ compiler (g++ or equivalent) and make installed
+2. Compile the application:
+   ```bash
+   g++ -std=c++17 FunModelPainter.cpp -o 3DModelPainter
    ```
-   git clone https://github.com/yourusername/3D-Model-Painter.git
-   cd 3D-Model-Painter
-   ```
-
-2. Create a build directory:
-   ```
-   mkdir build
-   cd build
-   ```
-
-3. Build the application:
-   ```
-   cmake ..
-   make
-   ```
-
-4. Run the application:
-   ```
+3. Run the application:
+   ```bash
    ./3DModelPainter
    ```
 
+## Versions
+
+The package includes two main versions of the application:
+
+### Original Version (`3DModelPainter`)
+The original version with basic functionality.
+
+### Enhanced Version (`EnhancedModelPainter`)
+The enhanced version with additional features:
+- Interactive color wheel with harmony suggestions
+- UV unwrapping and editing tools
+- Multiple export formats support
+
 ## Usage
 
-### Basic Commands
+### Basic Commands (Enhanced Version)
 
-- `1`, `2`, `3` - Select tool (Brush, Eraser, LineArt)
-- `+`, `-` - Increase/decrease brush size
+- `1-5` - Select tools (Brush, Eraser, LineArt, Rainbow, Stamp, Pattern)
+- `+/-` - Adjust tool size
+- `1-9, 0` - Select color (0 = eraser)
 - `p x y` - Paint at position (x,y)
 - `c` - Clear current layer
 - `n [name]` - New layer with optional name
 - `l` - List layers
 - `s index` - Select layer by index
+- `t index` - Toggle layer visibility
+- `w` - Open interactive color wheel with harmony suggestions
+- `u` - Open UV unwrapping and editing tools
+- `x` - Export project (TXT, PPM, SVG, OBJ)
 - `v` - View canvas
 - `h` - Show help
-- `q` - Quit
+- `d` - Run demo
+- `q` - Quit application
 
-### Example Workflow
+### Color Wheel Usage
 
-1. Start the application
-2. Create a new layer using `n Background`
-3. Use the brush tool to paint on the layer with `p 10 10`
-4. Create another layer with `n Details`
-5. Select a different tool with `2` for eraser or `3` for line art
-6. Paint on the new layer
-7. View your work with `v`
+The interactive color wheel provides:
+- Visual color selection
+- HSV color model control
+- Harmony color suggestions (complementary, analogous, triadic, etc.)
+- Real-time color feedback
 
-## Project Structure
+### UV Unwrapping Tools
 
-- `/src` - Source code
-- `/bin` - Compiled binaries
-- `/docs` - Documentation
-- `/examples` - Example models and projects
+The UV unwrapping interface allows:
+- Automatic UV unwrapping
+- Planar unwrapping for specific faces
+- UV scale and offset adjustment
+- UV map visualization
+
+## Export Formats
+
+- **TXT** - Text-based representation of the model
+- **PPM** - Portable Pixmap format for textures
+- **SVG** - Scalable Vector Graphics format
+- **OBJ/MTL** - Wavefront OBJ format with material files
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This software is released under the MIT License. See the LICENSE file for details.
 
-## Acknowledgements
+## Version History
 
-- [OpenGL](https://www.opengl.org/)
-- [GLFW](https://www.glfw.org/)
-- [GLM](https://github.com/g-truc/glm)
-- [Assimp](https://github.com/assimp/assimp)
-- [ImGui](https://github.com/ocornut/imgui)
-git clone https://github.com/cybat08/ShaderSketch.git
-cd ShaderSketch
-mkdir build
-cd build
-cmake ..
-make
+- v0.2.0 - Added interactive color wheel and UV unwrapping tools
+- v0.1.0 - Initial release with basic painting functionality
