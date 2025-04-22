@@ -48,6 +48,10 @@ args = "Run Enhanced Model Painter"
 task = "workflow.run"
 args = "Run Enhanced Model Painter Demo"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Enhanced Fun Model Painter"
+
 [[workflows.workflow]]
 name = "Build and Run 3D Model Painter"
 author = "agent"
@@ -174,6 +178,20 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "./EnhancedModelPainter --demo"
+
+[[workflows.workflow]]
+name = "Run Enhanced Fun Model Painter"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./EnhancedFunModelPainter"
 
 [deployment]
 run = ["sh", "-c", "mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./3DModelPainter"]
