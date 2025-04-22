@@ -28,6 +28,14 @@ args = "Run Simple 3D Model Painter"
 task = "workflow.run"
 args = "3D Model Painter"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Colorful 3D Model Painter"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Interactive Colorful 3D Model Painter"
+
 [[workflows.workflow]]
 name = "Build and Run 3D Model Painter"
 author = "agent"
@@ -84,6 +92,34 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "./3DModelPainter"
+
+[[workflows.workflow]]
+name = "Run Colorful 3D Model Painter"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./ColorModelPainter --demo"
+
+[[workflows.workflow]]
+name = "Run Interactive Colorful 3D Model Painter"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./ColorModelPainter"
 
 [deployment]
 run = ["sh", "-c", "mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./3DModelPainter"]
