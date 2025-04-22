@@ -1,180 +1,188 @@
 #!/bin/bash
-# 3D Model Painter Installer Script
-# This script helps install the 3D Model Painter application and its dependencies
+# 3D Model Painter Installation Script
+# This script installs and sets up the 3D Model Painter application
 
-# Text formatting
-BOLD="\033[1m"
-RED="\033[31m"
-GREEN="\033[32m"
-YELLOW="\033[33m"
-BLUE="\033[34m"
-MAGENTA="\033[35m"
-CYAN="\033[36m"
-RESET="\033[0m"
+set -e # Exit on error
 
-# Function to print colored messages
-print_message() {
-    echo -e "${2}${1}${RESET}"
+# Display welcome banner
+echo -e "\e[1;36m"
+echo "======================================================"
+echo "   3D Model Painter - Installation Script"
+echo "======================================================"
+echo -e "\e[0m"
+
+# Detect OS
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    OS="Linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    OS="macOS"
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    OS="Windows"
+else
+    OS="Unknown"
+fi
+
+echo -e "\e[1;32m[✓] Detected operating system: $OS\e[0m"
+
+# Create directories
+mkdir -p build
+mkdir -p simple_build
+
+# Determine available features based on dependencies
+OPENGL_AVAILABLE=false
+GLM_AVAILABLE=false
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
 }
 
-# Function to print step headers
-print_step() {
-    echo ""
-    print_message "===== ${1} =====" "${BOLD}${BLUE}"
-}
+echo -e "\e[1;33m[⧗] Checking for dependencies...\e[0m"
 
-# Check operating system
-check_os() {
-    print_step "Detecting Operating System"
-    
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        OS="linux"
-        print_message "Linux detected!" "${GREEN}"
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        OS="macos"
-        print_message "macOS detected!" "${GREEN}"
-    else
-        OS="unknown"
-        print_message "Unsupported operating system: $OSTYPE" "${YELLOW}"
-        print_message "The installer will try to continue, but you may need to install dependencies manually." "${YELLOW}"
-    fi
-}
+# Check for C++ compiler
+if command_exists g++; then
+    echo -e "\e[1;32m[✓] Found C++ compiler: $(g++ --version | head -n 1)\e[0m"
+elif command_exists clang++; then
+    echo -e "\e[1;32m[✓] Found C++ compiler: $(clang++ --version | head -n 1)\e[0m"
+else
+    echo -e "\e[1;31m[⚠] No C++ compiler found. Please install g++ or clang++.\e[0m"
+    exit 1
+fi
 
-# Install required system dependencies
-install_dependencies() {
-    print_step "Installing System Dependencies"
-    
-    if [[ "$OS" == "linux" ]]; then
-        # Check for package manager
-        if command -v apt-get &> /dev/null; then
-            print_message "Using apt package manager..." "${CYAN}"
-            sudo apt-get update
-            sudo apt-get install -y g++ cmake make
-        elif command -v dnf &> /dev/null; then
-            print_message "Using dnf package manager..." "${CYAN}"
-            sudo dnf install -y gcc-c++ cmake make
-        elif command -v pacman &> /dev/null; then
-            print_message "Using pacman package manager..." "${CYAN}"
-            sudo pacman -Sy gcc cmake make
+# Check for OpenGL and GLM
+if [[ "$OS" == "Linux" ]]; then
+    # Check for pkg-config
+    if command_exists pkg-config; then
+        # Check OpenGL
+        if pkg-config --exists gl; then
+            OPENGL_AVAILABLE=true
+            echo -e "\e[1;32m[✓] OpenGL development libraries found\e[0m"
         else
-            print_message "Couldn't determine package manager. Please install g++, cmake, and make manually." "${YELLOW}"
-        fi
-    elif [[ "$OS" == "macos" ]]; then
-        # Check for Homebrew
-        if command -v brew &> /dev/null; then
-            print_message "Using Homebrew package manager..." "${CYAN}"
-            brew install cmake
-        else
-            print_message "Homebrew not found. Installing Homebrew..." "${CYAN}"
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            brew install cmake
+            echo -e "\e[1;33m[i] OpenGL development libraries not found (advanced features disabled)\e[0m"
         fi
         
-        # Check if Xcode command line tools are installed
-        if ! command -v g++ &> /dev/null; then
-            print_message "Installing Xcode Command Line Tools..." "${CYAN}"
-            xcode-select --install
+        # Check GLM
+        if pkg-config --exists glm; then
+            GLM_AVAILABLE=true
+            echo -e "\e[1;32m[✓] GLM library found\e[0m"
+        else
+            echo -e "\e[1;33m[i] GLM library not found (advanced features disabled)\e[0m"
         fi
-    fi
-    
-    print_message "Dependencies installed!" "${GREEN}"
-}
-
-# Compile the terminal-based version
-compile_app() {
-    print_step "Compiling 3D Model Painter"
-    
-    # Create build directory
-    mkdir -p terminal_build
-    cd terminal_build
-    
-    print_message "Compiling enhanced versions..." "${CYAN}"
-    
-    # Compile FunModelPainter (original version)
-    print_message "Compiling FunModelPainter..." "${CYAN}"
-    g++ -std=c++17 ../FunModelPainter.cpp -o 3DModelPainter
-    
-    # Compile EnhancedModelPainter (new version with color wheel and UV tools)
-    print_message "Compiling EnhancedModelPainter..." "${CYAN}"
-    g++ -std=c++17 ../EnhancedModelPainter.cpp -o EnhancedModelPainter
-    
-    if [[ $? -eq 0 ]]; then
-        print_message "Compilation successful!" "${GREEN}"
     else
-        print_message "Compilation failed. Please check the error messages above." "${RED}"
-        exit 1
+        echo -e "\e[1;33m[i] pkg-config not found, can't detect OpenGL/GLM (advanced features disabled)\e[0m"
     fi
+elif [[ "$OS" == "macOS" ]]; then
+    # macOS has OpenGL by default
+    OPENGL_AVAILABLE=true
+    echo -e "\e[1;32m[✓] OpenGL available (macOS system libraries)\e[0m"
     
+    # Check GLM through brew
+    if command_exists brew; then
+        if brew list glm &>/dev/null; then
+            GLM_AVAILABLE=true
+            echo -e "\e[1;32m[✓] GLM library found\e[0m"
+        else
+            echo -e "\e[1;33m[i] GLM library not found (advanced features disabled)\e[0m"
+        fi
+    else
+        echo -e "\e[1;33m[i] Homebrew not found, can't detect GLM (advanced features disabled)\e[0m"
+    fi
+elif [[ "$OS" == "Windows" ]]; then
+    echo -e "\e[1;33m[i] On Windows, using simplified build without dependency checks\e[0m"
+fi
+
+# Build the Simple/Fun Model Painter (no dependencies required)
+echo -e "\e[1;33m[⧗] Building Fun 3D Model Painter...\e[0m"
+g++ -std=c++17 FunModelPainter.cpp -o FunModelPainter
+echo -e "\e[1;32m[✓] Successfully built Fun 3D Model Painter\e[0m"
+
+# Copy to simple_build directory
+cp FunModelPainter simple_build/SimpleModelPainter
+echo -e "\e[1;32m[✓] Copied to SimpleModelPainter in simple_build directory\e[0m"
+
+# Build Enhanced Model Painter
+echo -e "\e[1;33m[⧗] Building Enhanced Model Painter...\e[0m"
+g++ -std=c++17 EnhancedModelPainter.cpp -o EnhancedModelPainter
+echo -e "\e[1;32m[✓] Successfully built Enhanced Model Painter\e[0m"
+
+# Build ColorModelPainter
+echo -e "\e[1;33m[⧗] Building Color Model Painter...\e[0m"
+g++ -std=c++17 ColorModelPainter.cpp -o ColorModelPainter
+echo -e "\e[1;32m[✓] Successfully built Color Model Painter\e[0m"
+
+# Build full 3D version if dependencies are available
+if [[ "$OPENGL_AVAILABLE" == "true" && "$GLM_AVAILABLE" == "true" ]]; then
+    echo -e "\e[1;33m[⧗] Building full 3D Model Painter with OpenGL...\e[0m"
+    cd build
+    if command_exists cmake; then
+        cmake ..
+        make
+        echo -e "\e[1;32m[✓] Successfully built full 3D Model Painter\e[0m"
+    else
+        echo -e "\e[1;31m[⚠] CMake not found, skipping full 3D build\e[0m"
+    fi
     cd ..
-}
+else
+    echo -e "\e[1;33m[i] Skipping full 3D build due to missing dependencies\e[0m"
+fi
 
-# Create a desktop shortcut (for Linux)
-create_shortcut() {
-    if [[ "$OS" == "linux" ]]; then
-        print_step "Creating Desktop Shortcut"
-        
-        # Create a desktop entry
-        DESKTOP_FILE=~/.local/share/applications/3DModelPainter.desktop
-        mkdir -p ~/.local/share/applications
-        
-        echo "[Desktop Entry]
-Name=3D Model Painter
-Comment=A colorful 3D model painting application
-Exec=$(pwd)/terminal_build/EnhancedModelPainter
-Terminal=true
-Type=Application
-Categories=Graphics;3DGraphics;" > "$DESKTOP_FILE"
-        
-        DESKTOP_FILE_DEMO=~/.local/share/applications/3DModelPainterDemo.desktop
-        echo "[Desktop Entry]
-Name=3D Model Painter Demo
-Comment=A demo of the 3D model painting application
-Exec=$(pwd)/terminal_build/EnhancedModelPainter --demo
-Terminal=true
-Type=Application
-Categories=Graphics;3DGraphics;" > "$DESKTOP_FILE_DEMO"
-        
-        chmod +x "$DESKTOP_FILE_DEMO"
-        print_message "Demo shortcut created at $DESKTOP_FILE_DEMO" "${GREEN}"
-        
-        chmod +x "$DESKTOP_FILE"
-        
-        print_message "Desktop shortcut created at $DESKTOP_FILE" "${GREEN}"
-    fi
-}
+# Create convenience script for running
+cat > run_3d_model_painter.sh << 'EOL'
+#!/bin/bash
+if [ -f "build/3DModelPainter" ]; then
+    echo "Running full 3D Model Painter..."
+    ./build/3DModelPainter
+elif [ -f "EnhancedModelPainter" ]; then
+    echo "Running Enhanced Model Painter..."
+    ./EnhancedModelPainter
+else
+    echo "Running Simple Model Painter..."
+    ./simple_build/SimpleModelPainter
+fi
+EOL
 
-# Final instructions
-show_instructions() {
-    print_step "Installation Complete"
-    
-    echo -e "${BOLD}${GREEN}3D Model Painter has been successfully installed!${RESET}"
-    echo ""
-    echo -e "${BOLD}To run the application:${RESET}"
-    echo -e "${CYAN}  ./terminal_build/3DModelPainter${RESET} (Original version)"
-    echo -e "${CYAN}  ./terminal_build/EnhancedModelPainter${RESET} (Enhanced version with color wheel and UV tools)"
-    echo -e "${CYAN}  ./terminal_build/EnhancedModelPainter --demo${RESET} (Run demo animation)"
-    echo ""
-    echo -e "${BOLD}Features:${RESET}"
-    echo -e "${YELLOW}  • Interactive Color Wheel with Harmony Suggestions${RESET}"
-    echo -e "${YELLOW}  • UV Unwrapping and Editing Tools${RESET}"
-    echo -e "${YELLOW}  • Multiple Export Format Support${RESET}"
-    echo ""
-    echo -e "${BOLD}${MAGENTA}Thank you for installing 3D Model Painter!${RESET}"
-}
+chmod +x run_3d_model_painter.sh
 
-# Main installation process
-main() {
-    print_message "===========================================" "${BOLD}${CYAN}"
-    print_message "       3D MODEL PAINTER INSTALLER       " "${BOLD}${CYAN}"
-    print_message "===========================================" "${BOLD}${CYAN}"
-    echo ""
-    
-    check_os
-    install_dependencies
-    compile_app
-    create_shortcut
-    show_instructions
-}
+# Create demo script
+cat > run_demo.sh << 'EOL'
+#!/bin/bash
+if [ -f "EnhancedModelPainter" ]; then
+    echo "Running Enhanced Model Painter Demo..."
+    ./EnhancedModelPainter --demo
+elif [ -f "ColorModelPainter" ]; then
+    echo "Running Color Model Painter Demo..."
+    ./ColorModelPainter --demo
+else
+    echo "Running Simple Model Painter Demo..."
+    ./simple_build/SimpleModelPainter --demo
+fi
+EOL
 
-# Run the installer
-main
+chmod +x run_demo.sh
+
+# Success message
+echo -e "\e[1;36m"
+echo "======================================================"
+echo "   Installation Complete!"
+echo "======================================================"
+echo -e "\e[0m"
+echo -e "\e[1;32mTo run the application:\e[0m"
+echo -e "\e[1m./run_3d_model_painter.sh\e[0m"
+echo
+echo -e "\e[1;32mTo run the demo:\e[0m"
+echo -e "\e[1m./run_demo.sh\e[0m"
+echo
+echo -e "\e[1;32mOr run specific variants:\e[0m"
+echo -e "\e[1m./FunModelPainter\e[0m (Simplified version)"
+echo -e "\e[1m./EnhancedModelPainter\e[0m (Enhanced features)"
+echo -e "\e[1m./ColorModelPainter\e[0m (Color-focused version)"
+
+if [[ "$OS" == "Windows" ]]; then
+    echo
+    echo -e "\e[1;32mOn Windows, you can also run:\e[0m"
+    echo -e "\e[1m./windows_build.bat\e[0m (Windows-specific build)"
+    echo -e "\e[1m./create_installer.bat\e[0m (Create Windows installer)"
+fi
+
+echo
+echo -e "\e[1;33mThanks for installing 3D Model Painter!\e[0m"

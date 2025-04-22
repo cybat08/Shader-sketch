@@ -1,0 +1,64 @@
+# Compiled binaries
+FunModelPainter
+SimpleModelPainter
+EnhancedModelPainter
+ColorModelPainter
+3DModelPainter
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build directories
+/build/
+/simple_build/
+/cmake-build-*/
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Generated files
+*.o
+*.obj
+*.a
+*.lib
+run_*.sh
+
+# Windows specific
+*.ilk
+*.pdb
+*.exp
+*.res
+*.ico
+*.rc
+*.manifest
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Exported files from the application
+test_*.obj
+test_*.mtl
+test_*.svg
+test_*.ppm
+test_*.txt
