@@ -1,0 +1,31 @@
+{
+  "name": "3d-model-painter",
+  "version": "0.1.0",
+  "description": "A C++ desktop application for painting 3D models with layer support",
+  "main": "bin/3DModelPainter",
+  "scripts": {
+    "build": "mkdir -p build && cd build && cmake .. && make",
+    "start": "./bin/3DModelPainter",
+    "demo": "./bin/3DModelPainter --demo",
+    "clean": "rm -rf build/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/3D-Model-Painter.git"
+  },
+  "keywords": [
+    "3d",
+    "model",
+    "painting",
+    "texturing",
+    "layers"
+  ],
+  "author": "3D Model Painter Contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/3D-Model-Painter/issues"
+  },
+  "homepage": "https://github.com/yourusername/3D-Model-Painter#readme",
+  "dependencies": {},
+  "devDependencies": {}
+}
