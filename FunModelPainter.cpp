@@ -2923,6 +2923,7 @@ private:
     PaintTool* currentTool;
     bool running;
     std::map<char, Color> colorPalette;
+    HSV currentHsvColor; // Current color in HSV for color wheel
 };
 
 int main(int argc, char* argv[]) {
