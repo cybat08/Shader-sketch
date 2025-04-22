@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 3.10)
+project(3DModelPainter)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# For Windows build
+if(WIN32)
+    # Static linking for Windows to make standalone executable
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+endif()
+
+# Create executable
+add_executable(3DModelPainter EnhancedModelPainter.cpp)
+
+# Set Windows subsystem
+if(WIN32)
+    set_target_properties(3DModelPainter PROPERTIES
+        WIN32_EXECUTABLE FALSE  # Console application
+        SUFFIX ".exe"
+    )
+endif()
+
+# Installation
+install(TARGETS 3DModelPainter DESTINATION .)
+install(FILES 
+    "run_3d_model_painter.bat"
+    "run_3d_model_painter_demo.bat"
+    "readme.txt"
+    DESTINATION .)
