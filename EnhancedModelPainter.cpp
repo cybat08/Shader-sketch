@@ -13,6 +13,10 @@
 #include <cctype>
 #include <sstream>
 
+// Color wheel with harmony suggestions
+#include "color_wheel.h"
+#include "color_wheel_app.cpp"
+
 // Windows-specific headers
 #ifdef _WIN32
 #include <windows.h>
@@ -1402,255 +1406,44 @@ public:
     // Display the interactive color wheel
     void showColorWheel() {
         clearScreen();
-        bool colorUpdated = false;
         
         // Initialize currentHsvColor if it's the first time
         if (currentHsvColor.h == 0.0f && currentHsvColor.s == 0.0f && currentHsvColor.v == 0.0f) {
             currentHsvColor = HSV(180.0f, 0.8f, 0.9f);  // Default to a nice cyan
         }
         
-        HSV currentColor = currentHsvColor;
+        // Create an interactive color wheel with our current color
+        InteractiveColorWheel colorWheel(currentHsvColor.h, currentHsvColor.s, currentHsvColor.v);
         
-        std::cout << BOLD << BG_BRIGHT_BLUE << FG_BRIGHT_WHITE 
-                  << "               COLOR WHEEL WITH HARMONY               " 
-                  << RESET << std::endl << std::endl;
+        // Run the color wheel and get the selected color
+        color_wheel::Color selectedColor = colorWheel.run();
         
-        // Current color info
-        RGB rgbColor = currentColor.toRGB();
-        std::string ansiColor = rgbColor.toAnsiColor();
-        std::string colorName = rgbColor.getColorName();
-        
-        std::cout << BOLD << "Current Color: " << ansiColor << "███" << RESET << " (HSV: " 
-                  << std::fixed << std::setprecision(0) << currentColor.h << "°, " 
-                  << std::setprecision(2) << currentColor.s * 100 << "%, " 
-                  << currentColor.v * 100 << "%)" << std::endl;
-        std::cout << "Name: " << colorName << std::endl << std::endl;
-        
-        // ASCII color wheel representation
-        const int radius = 10;
-        const int wheelSize = radius * 2 + 1;
-        
-        // Draw the color wheel
-        for (int y = -radius; y <= radius; y++) {
-            std::cout << "  ";
-            for (int x = -radius; x <= radius; x++) {
-                // Calculate distance from center
-                float distance = std::sqrt(x*x + y*y);
-                
-                if (distance <= radius) {
-                    // Calculate angle (hue) and convert to degrees
-                    float angle = std::atan2(y, x) * 180.0f / M_PI;
-                    if (angle < 0) angle += 360.0f;
-                    
-                    // Calculate saturation based on distance from center
-                    float saturation = distance / radius;
-                    
-                    // Create HSV color and convert to RGB
-                    HSV pointColor(angle, saturation, 1.0f);
-                    RGB rgb = pointColor.toRGB();
-                    std::string color = rgb.toAnsiColor();
-                    
-                    // Mark the current selected color
-                    float angleDiff = std::abs(angle - currentColor.h);
-                    if (angleDiff > 180) angleDiff = 360 - angleDiff;
-                    
-                    float satDiff = std::abs(saturation - currentColor.s);
-                    
-                    if (angleDiff < 15 && satDiff < 0.2) {
-                        std::cout << color << "◉" << RESET;
-                    } else {
-                        std::cout << color << "●" << RESET;
-                    }
-                } else {
-                    std::cout << " ";
-                }
-            }
-            std::cout << std::endl;
-        }
-        
-        std::cout << std::endl;
-        
-        // Color harmony suggestions
-        std::cout << BOLD << FG_GREEN << "Color Harmony Suggestions:" << RESET << std::endl;
-        
-        // Complementary
-        HSV complementary = currentColor.complementary();
-        RGB compRgb = complementary.toRGB();
-        std::cout << "  " << FG_BRIGHT_YELLOW << "1" << RESET << " - Complementary: " 
-                  << compRgb.toAnsiColor() << "███" << RESET << " (" 
-                  << std::fixed << std::setprecision(0) << complementary.h << "°)" << std::endl;
-        
-        // Analogous
-        std::vector<HSV> analogous = currentColor.analogous();
-        std::cout << "  " << FG_BRIGHT_YELLOW << "2" << RESET << " - Analogous: ";
-        for (const auto& color : analogous) {
-            RGB rgb = color.toRGB();
-            std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
-        }
-        std::cout << std::endl;
-        
-        // Triadic
-        std::vector<HSV> triadic = currentColor.triadic();
-        std::cout << "  " << FG_BRIGHT_YELLOW << "3" << RESET << " - Triadic: ";
-        for (const auto& color : triadic) {
-            RGB rgb = color.toRGB();
-            std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
-        }
-        std::cout << std::endl;
-        
-        // Split Complementary
-        std::vector<HSV> splitComp = currentColor.splitComplementary();
-        std::cout << "  " << FG_BRIGHT_YELLOW << "4" << RESET << " - Split Complementary: ";
-        for (const auto& color : splitComp) {
-            RGB rgb = color.toRGB();
-            std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
-        }
-        std::cout << std::endl;
-        
-        // Tetradic (Rectangle)
-        std::vector<HSV> tetradic = currentColor.tetradic();
-        std::cout << "  " << FG_BRIGHT_YELLOW << "5" << RESET << " - Tetradic: ";
-        for (const auto& color : tetradic) {
-            RGB rgb = color.toRGB();
-            std::cout << rgb.toAnsiColor() << "███" << RESET << " ";
-        }
-        std::cout << std::endl;
-        
-        // Controls
-        std::cout << std::endl;
-        std::cout << BOLD << FG_GREEN << "Controls:" << RESET << std::endl;
-        std::cout << "  Type " << FG_BRIGHT_YELLOW << "up/down/left/right" << RESET << " to move around the color wheel" << std::endl;
-        std::cout << "  Type " << FG_BRIGHT_YELLOW << "1-5" << RESET << " to select a harmony color" << std::endl;
-        std::cout << "  Type " << FG_BRIGHT_YELLOW << "+/-" << RESET << " to adjust saturation" << std::endl;
-        std::cout << "  Type " << FG_BRIGHT_YELLOW << "</>" << RESET << " to adjust value (brightness)" << std::endl;
-        std::cout << "  Press " << FG_BRIGHT_YELLOW << "Enter" << RESET << " to select current color and return" << std::endl;
-        std::cout << "  Type " << FG_BRIGHT_YELLOW << "q" << RESET << " to cancel and return" << std::endl;
-        
-        // Get user input for color wheel navigation
-        std::cout << std::endl;
-        std::cout << "Use arrow keys to navigate, or enter command: ";
-        std::string input;
-        std::getline(std::cin, input);
-        
-        if (input.empty()) {
-            // Return with current color selected
-            currentHsvColor = currentColor;
+        // Update the current tool color if we have one
+        if (currentTool) {
+            int r = selectedColor.r;
+            int g = selectedColor.g;
+            int b = selectedColor.b;
             
-            // Update the current tool color
-            if (currentTool) {
-                RGB toolRgb = currentColor.toRGB();
-                std::string ansiCode = toolRgb.toAnsiColor();
-                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, colorName));
-                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
-                          << "███" << RESET << " " << colorName << std::endl;
-            }
-            return;
-        } else if (input == "q" || input == "Q") {
-            // Cancel and return
-            return;
-        }
-        
-        // Handle user input
-        if (input == "1") {
-            // Complementary
-            currentHsvColor = complementary;
+            // Convert to 0-1 range for our RGB
+            float rNorm = r / 255.0f;
+            float gNorm = g / 255.0f;
+            float bNorm = b / 255.0f;
             
-            // Update the current tool color
-            if (currentTool) {
-                RGB toolRgb = currentHsvColor.toRGB();
-                std::string ansiCode = toolRgb.toAnsiColor();
-                std::string newColorName = toolRgb.getColorName();
-                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
-                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
-                          << "███" << RESET << " " << newColorName << std::endl;
-            }
-        } else if (input == "2" && !analogous.empty()) {
-            // First analogous color
-            currentHsvColor = analogous[0];
+            RGB toolRgb(rNorm, gNorm, bNorm);
+            std::string ansiCode = toolRgb.toAnsiColor();
+            std::string colorName = toolRgb.getColorName();
             
-            // Update the current tool color
-            if (currentTool) {
-                RGB toolRgb = currentHsvColor.toRGB();
-                std::string ansiCode = toolRgb.toAnsiColor();
-                std::string newColorName = toolRgb.getColorName();
-                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
-                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
-                          << "███" << RESET << " " << newColorName << std::endl;
-            }
-        } else if (input == "3" && !triadic.empty()) {
-            // First triadic color
-            currentHsvColor = triadic[0];
+            // Update HSV values for our application
+            HSV newHsv = toolRgb.toHSV();
+            currentHsvColor = newHsv;
             
-            // Update the current tool color
-            if (currentTool) {
-                RGB toolRgb = currentHsvColor.toRGB();
-                std::string ansiCode = toolRgb.toAnsiColor();
-                std::string newColorName = toolRgb.getColorName();
-                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
-                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
-                          << "███" << RESET << " " << newColorName << std::endl;
-            }
-        } else if (input == "4" && !splitComp.empty()) {
-            // First split complementary color
-            currentHsvColor = splitComp[0];
+            currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, colorName));
+            std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
+                      << "███" << RESET << " " << colorName << " (" << ColorWheelAdapter::getAnsiColorCode(selectedColor) 
+                      << "███" << RESET << ")" << std::endl;
             
-            // Update the current tool color
-            if (currentTool) {
-                RGB toolRgb = currentHsvColor.toRGB();
-                std::string ansiCode = toolRgb.toAnsiColor();
-                std::string newColorName = toolRgb.getColorName();
-                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
-                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
-                          << "███" << RESET << " " << newColorName << std::endl;
-            }
-        } else if (input == "5" && !tetradic.empty()) {
-            // First tetradic color
-            currentHsvColor = tetradic[0];
-            
-            // Update the current tool color
-            if (currentTool) {
-                RGB toolRgb = currentHsvColor.toRGB();
-                std::string ansiCode = toolRgb.toAnsiColor();
-                std::string newColorName = toolRgb.getColorName();
-                currentTool->setColor(Color(currentTool->getColor().symbol, ansiCode, newColorName));
-                std::cout << FG_BRIGHT_GREEN << "✓ " << "Color updated to " << ansiCode 
-                          << "███" << RESET << " " << newColorName << std::endl;
-            }
-        } else if (input == "up" || input == "w") {
-            // Move up (decrease hue)
-            currentColor.h = std::fmod(currentColor.h - 15 + 360, 360);
-            showColorWheel(); // Recursively call to show updated wheel
-        } else if (input == "down" || input == "s") {
-            // Move down (increase hue)
-            currentColor.h = std::fmod(currentColor.h + 15, 360);
-            showColorWheel(); // Recursively call to show updated wheel
-        } else if (input == "left" || input == "a") {
-            // Move left (decrease saturation)
-            currentColor.s = std::max(0.0f, currentColor.s - 0.1f);
-            showColorWheel(); // Recursively call to show updated wheel
-        } else if (input == "right" || input == "d") {
-            // Move right (increase saturation)
-            currentColor.s = std::min(1.0f, currentColor.s + 0.1f);
-            showColorWheel(); // Recursively call to show updated wheel
-        } else if (input == "+") {
-            // Increase saturation
-            currentColor.s = std::min(1.0f, currentColor.s + 0.1f);
-            showColorWheel(); // Recursively call to show updated wheel
-        } else if (input == "-") {
-            // Decrease saturation
-            currentColor.s = std::max(0.0f, currentColor.s - 0.1f);
-            showColorWheel(); // Recursively call to show updated wheel
-        } else if (input == "<") {
-            // Decrease value
-            currentColor.v = std::max(0.0f, currentColor.v - 0.1f);
-            showColorWheel(); // Recursively call to show updated wheel
-        } else if (input == ">") {
-            // Increase value
-            currentColor.v = std::min(1.0f, currentColor.v + 0.1f);
-            showColorWheel(); // Recursively call to show updated wheel
-        } else {
-            // Unknown command - show the wheel again
-            showColorWheel();
+            // Short pause to see the color
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
     }
     
@@ -2079,7 +1872,7 @@ public:
         std::cout << "  " << FG_BRIGHT_YELLOW << "t index" << RESET << "  - Toggle layer visibility" << std::endl;
         
         std::cout << BOLD << FG_BRIGHT_GREEN << "Advanced Features:" << RESET << std::endl;
-        std::cout << "  " << FG_BRIGHT_YELLOW << "w" << RESET << "        - Open interactive color wheel" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "w" << RESET << "        - Open enhanced interactive color wheel with harmony suggestions" << std::endl;
         std::cout << "  " << FG_BRIGHT_YELLOW << "u" << RESET << "        - Open UV unwrapping tools" << std::endl;
         std::cout << "  " << FG_BRIGHT_YELLOW << "x" << RESET << "        - Export project (TXT, PPM, SVG, OBJ)" << std::endl;
         

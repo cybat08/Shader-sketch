@@ -1,55 +1,47 @@
-3D Model Painter - Windows Version
-====================================
+3D Model Painter for Windows
+===========================
 
-INSTALLATION
------------
-1. Extract all files to a folder of your choice
-2. No installation required - the application is portable
-
-RUNNING THE APPLICATION
-----------------------
-1. Double-click 'run_3d_model_painter.bat' to run the full application
-2. Double-click 'run_3d_model_painter_demo.bat' to run the demo mode
-
-COMMANDS
--------
-- 1-5     : Select tools (Brush, Eraser, LineArt, Rainbow, Stamp)
-- +/-     : Adjust tool size
-- 1-9, 0  : Select color (0 = eraser)
-- p x y   : Paint at coordinates x,y
-- c       : Clear current layer
-- n [name]: New layer with optional name
-- l       : List layers
-- s index : Select layer by index
-- t index : Toggle layer visibility
-- w       : Open interactive color wheel with harmony suggestions
-- u       : Open UV unwrapping and editing tools
-- x       : Export project (TXT, PPM, SVG, OBJ)
-- v       : View canvas
-- h       : Show help
-- d       : Run demo
-- q       : Quit
+A powerful desktop application for painting 3D models with advanced tools, intuitive interface, and comprehensive export capabilities.
 
 FEATURES
--------
-- Interactive color wheel with harmony suggestions
-- UV unwrapping and editing tools
-- Multiple export formats (TXT, PPM, SVG, OBJ/MTL)
-- Layer-based painting system
-- Various painting tools
+--------
+* Support for multiple 3D model formats (OBJ, FBX)
+* Multi-layer painting system with advanced brush controls
+* Comprehensive tool selection (Brush, Eraser, LineArt, Rainbow, Stamp, Pattern)
+* Multiple texture export formats (SVG, PPM, TXT)
+* Flexible brush size and color controls
+* Color wheel with harmony selection
+* UV unwrapping tools
+
+INSTALLATION
+------------
+1. Extract all files to a folder of your choice
+2. Run windows_build.bat to compile the application
+3. (Optional) Run create_installer.bat to create a Windows installer
+4. Run the application using run_3d_model_painter.bat or via the installer
 
 SYSTEM REQUIREMENTS
 ------------------
-- Windows 7/8/10/11
-- No additional dependencies required
+* Windows 7/8/10/11
+* 2 GB RAM
+* 50 MB disk space
+* C++ compiler (Visual Studio or MinGW)
 
-TROUBLESHOOTING
---------------
-If the application doesn't run:
-1. Make sure you're running it on a Windows system
-2. Try running directly from Command Prompt by navigating to the folder and typing '3DModelPainter.exe'
-3. Ensure your terminal supports ANSI colors for best experience
+QUICK START GUIDE
+----------------
+1. Launch the application
+2. Select a tool (1-6 keys)
+3. Use + and - to adjust brush size
+4. Paint with 'p x y' command (e.g., p 10 5)
+5. Create new layers with 'n [layer name]'
+6. Switch between layers with 's [layer index]'
+7. View your canvas with 'v'
+8. Export your work with 'x'
 
-CONTACT
-------
-For support or feedback, please contact the developer.
+For a detailed guide and more information, visit:
+https://github.com/3D-Model-Painter/docs
+
+LICENSE
+-------
+Copyright (c) 2023
+This software is provided as-is, without warranty of any kind.
