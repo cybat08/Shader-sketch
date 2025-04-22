@@ -2,40 +2,106 @@
 
 **ShaderSketch** is a lightweight, experimental C++ 3D painting tool using OpenGL. It allows users to paint directly onto 3D models in real-time with shader-based effects. It's designed to be minimal, modifiable, and cross-platform — ideal for developers exploring procedural shading or real-time texture manipulation.
 
----
+![3D Model Painter](docs/screenshot.png)
 
-## ✨ Features
+## Features
 
-- 🎨 Real-time 3D texture painting
-- 📦 OBJ model loading support
-- 🧠 Simple GLSL-based shaders
-- 🔧 Modular C++ structure
-- 🖱️ Mouse interaction for painting
-- 🧰 Basic ImGui GUI integration (optional)
+- Load and visualize 3D models (OBJ and FBX formats)
+- Layer-based painting system
+- Multiple brush tools (Brush, Eraser, LineArt)
+- Adjustable brush size
+- Simple and intuitive interface
 
----
+## Getting Started
 
-## 🗂️ Project Structure
+### Prerequisites
 
+To build the application from source, you'll need:
 
----
+- C++ compiler with C++17 support
+- CMake 3.10 or higher
 
-## 🚀 Getting Started
+For the full 3D version, you'll also need:
+- OpenGL
+- GLFW
+- GLM
+- Assimp
+- ImGui
 
-### 🔧 Prerequisites
+### Installation
 
-- C++17 compiler (GCC, Clang, or MSVC)
-- [CMake](https://cmake.org/) (v3.10+)
-- [GLFW](https://www.glfw.org/) (window/input)
-- [GLEW](http://glew.sourceforge.net/) or similar (OpenGL extensions)
-- OpenGL 3.3 or higher
-- (Optional) [ImGui](https://github.com/ocornut/imgui) for GUI integration
+#### Pre-built Binaries
 
----
+Pre-built binaries are available in the [Releases](https://github.com/yourusername/3D-Model-Painter/releases) section.
 
-### 🛠️ Building (Linux/Mac/Windows)
+#### Building from Source
 
-```bash
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/3D-Model-Painter.git
+   cd 3D-Model-Painter
+   ```
+
+2. Create a build directory:
+   ```
+   mkdir build
+   cd build
+   ```
+
+3. Build the application:
+   ```
+   cmake ..
+   make
+   ```
+
+4. Run the application:
+   ```
+   ./3DModelPainter
+   ```
+
+## Usage
+
+### Basic Commands
+
+- `1`, `2`, `3` - Select tool (Brush, Eraser, LineArt)
+- `+`, `-` - Increase/decrease brush size
+- `p x y` - Paint at position (x,y)
+- `c` - Clear current layer
+- `n [name]` - New layer with optional name
+- `l` - List layers
+- `s index` - Select layer by index
+- `v` - View canvas
+- `h` - Show help
+- `q` - Quit
+
+### Example Workflow
+
+1. Start the application
+2. Create a new layer using `n Background`
+3. Use the brush tool to paint on the layer with `p 10 10`
+4. Create another layer with `n Details`
+5. Select a different tool with `2` for eraser or `3` for line art
+6. Paint on the new layer
+7. View your work with `v`
+
+## Project Structure
+
+- `/src` - Source code
+- `/bin` - Compiled binaries
+- `/docs` - Documentation
+- `/examples` - Example models and projects
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+- [OpenGL](https://www.opengl.org/)
+- [GLFW](https://www.glfw.org/)
+- [GLM](https://github.com/g-truc/glm)
+- [Assimp](https://github.com/assimp/assimp)
+- [ImGui](https://github.com/ocornut/imgui)
 git clone https://github.com/cybat08/ShaderSketch.git
 cd ShaderSketch
 mkdir build
