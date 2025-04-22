@@ -1,4 +1,4 @@
-# 3D Model Painter
+# ShaderSketch
 
 A C++ desktop application for painting 3D models with layer support, similar to professional image editing software.
 
