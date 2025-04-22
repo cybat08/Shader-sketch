@@ -4,28 +4,24 @@ A powerful C++ desktop application for 3D model painting, offering professional-
 
 ![3D Model Painter](generated-icon.png)
 
-[![GitHub Release](https://img.shields.io/github/v/release/3D-Model-Painter/3D-Model-Painter?style=flat-square&logo=github)](https://github.com/3D-Model-Painter/3D-Model-Painter/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
 - Interactive 3D model painting with multiple tools
 - Color wheel with harmony suggestions for professional color selection
-- UV unwrapping and editing tools
-- Multiple export formats (OBJ, FBX, SVG, PPM, TXT)
+- Multiple painting tools (Brush, Rainbow, Pattern, Stamp, and more)
+- Advanced effects for a more fun and engaging experience
+- Multiple export formats (OBJ, SVG, PPM, TXT)
 - Cross-platform compatibility (Linux, macOS, Windows)
-- Windows installer with proper desktop integration
-- Automatic GitHub release detection and updates
 
 ## Installation
 
-### Quick Install (via Git)
+### Quick Install
+
+The simplest way to install 3D Model Painter is to use the provided installation script:
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/3D-Model-Painter.git
-cd 3D-Model-Painter
-
 # Make the installation script executable
 chmod +x install.sh
 
@@ -34,10 +30,9 @@ chmod +x install.sh
 ```
 
 The installation script will:
-1. Detect your operating system
-2. Check for dependencies
-3. Build the appropriate version based on available libraries
-4. Create convenience scripts for running the application
+1. Compile the different versions of the application
+2. Create desktop shortcuts for easy access
+3. Set up everything you need to start using 3D Model Painter
 
 ### Manual Installation
 
