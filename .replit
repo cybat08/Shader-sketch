@@ -24,6 +24,10 @@ args = "vnc_3d_model_painter"
 task = "workflow.run"
 args = "Run Simple 3D Model Painter"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "3D Model Painter"
+
 [[workflows.workflow]]
 name = "Build and Run 3D Model Painter"
 author = "agent"
@@ -66,6 +70,20 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd simple_build && ./SimpleModelPainter --demo"
+
+[[workflows.workflow]]
+name = "3D Model Painter"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./3DModelPainter"
 
 [deployment]
 run = ["sh", "-c", "mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./3DModelPainter"]
