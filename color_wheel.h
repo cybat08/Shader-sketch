@@ -339,6 +339,16 @@ public:
         return ColorHarmony::getHarmonyName(getCurrentHarmonyType());
     }
     
+    // Get the selected harmony index (0-based)
+    int getSelectedHarmony() const {
+        return selectedHarmony;
+    }
+    
+    // Get the total number of harmony types available
+    int getHarmoniesCount() const {
+        return harmonies.size();
+    }
+    
     // Display the color wheel and harmonies as ASCII/ANSI art
     void display() const {
         // Terminal dimensions and aspect ratio correction
@@ -347,12 +357,22 @@ public:
         // Get the current harmony's colors for display
         std::vector<Color> harmonyColors = getCurrentHarmonyColors();
         
-        // Print the color wheel header
-        std::cout << "\n==== Color Wheel - Selected: " << selectedColor.getHexCode() 
-                  << " " << selectedColor.getColoredChar(' ') << " ====\n\n";
+        // Print the color wheel header with enhanced styling
+        std::cout << "\n\033[1;38;5;213m╔════ COLOR WHEEL ════╗\033[0m\n";
+        std::cout << "\033[1;38;5;213m║\033[0m " << "Selected: " << selectedColor.getHexCode() 
+                  << " " << selectedColor.getColoredChar(' ') << selectedColor.getColoredChar(' ') 
+                  << selectedColor.getColoredChar(' ') << " \033[1;38;5;213m║\033[0m\n";
+        std::cout << "\033[1;38;5;213m╚═════════════════════╝\033[0m\n\n";
         
-        // Print the color wheel
+        // Print the color wheel with improved visuals
+        std::cout << "  ";
+        for (int x = -wheelRadius; x <= wheelRadius; x++) {
+            std::cout << "═";
+        }
+        std::cout << "\n";
+        
         for (int y = -wheelRadius; y <= wheelRadius; y++) {
+            std::cout << " ║";
             for (int x = -wheelRadius; x <= wheelRadius; x++) {
                 // Apply aspect ratio correction
                 float normalized_x = x / (float)wheelRadius;
@@ -375,54 +395,85 @@ public:
                     
                     // Check if this point is one of the harmony colors
                     bool isHarmonyColor = false;
-                    for (const auto& color : harmonyColors) {
+                    int harmonyIndex = -1;
+                    
+                    for (size_t i = 0; i < harmonyColors.size(); i++) {
+                        const auto& color = harmonyColors[i];
                         if (std::abs(angle - color.h) < 5.0f && 
                             std::abs(distance - color.s) < 0.1f) {
                             isHarmonyColor = true;
+                            harmonyIndex = i;
                             break;
                         }
                     }
                     
                     if (isSelected) {
-                        // Mark selected color with an X
-                        std::cout << wheelColor.getANSIBgColor() << "X\033[0m";
+                        // Mark selected color with a star symbol
+                        std::cout << wheelColor.getANSIBgColor() << "★\033[0m";
                     } else if (isHarmonyColor) {
-                        // Mark harmony colors with an O
-                        std::cout << wheelColor.getANSIBgColor() << "O\033[0m";
+                        // Mark harmony colors with numbered indicators
+                        std::cout << wheelColor.getANSIBgColor() << (harmonyIndex + 1) << "\033[0m";
                     } else {
-                        // Regular wheel point
-                        std::cout << wheelColor.getColoredChar(' ');
+                        // Regular wheel point with full block for better color display
+                        std::cout << wheelColor.getColoredChar('█');
                     }
                 } else {
                     // Outside the wheel
                     std::cout << " ";
                 }
             }
-            std::cout << "\n";
+            std::cout << "║\n";
         }
         
-        // Display harmony information with more visual appeal
-        std::cout << "\n\033[1m" << getCurrentHarmonyName() << " Harmony\033[0m (";
-        std::cout << selectedHarmony + 1 << "/" << harmonies.size() << ")\n\n";
-        
-        // Display harmony colors in a more visually appealing way
-        std::cout << "Harmony Preview: ";
-        for (size_t i = 0; i < harmonyColors.size(); i++) {
-            // Display color blocks next to each other
-            const Color& color = harmonyColors[i];
-            std::cout << color.getColoredChar(' ') << color.getColoredChar(' ') << color.getColoredChar(' ');
+        std::cout << "  ";
+        for (int x = -wheelRadius; x <= wheelRadius; x++) {
+            std::cout << "═";
         }
         std::cout << "\n\n";
         
-        // Display detailed color information
+        // Display harmony information with enhanced visual appeal
+        std::cout << "\033[1;38;5;213m╔═══════ " << getCurrentHarmonyName() << " Harmony ";
+        std::cout << "(" << selectedHarmony + 1 << "/" << harmonies.size() << ") ═══════╗\033[0m\n";
+        
+        // Display harmony colors in a more visually appealing way - color palette
+        std::cout << "\033[1;38;5;213m║\033[0m ";
+        for (size_t i = 0; i < harmonyColors.size(); i++) {
+            // Display color blocks next to each other with number indicators
+            const Color& color = harmonyColors[i];
+            std::cout << "\033[1m" << (i+1) << ":\033[0m ";
+            for (int j = 0; j < 3; j++) {
+                std::cout << color.getColoredChar('█');
+            }
+            std::cout << " ";
+        }
+        std::cout << " \033[1;38;5;213m║\033[0m\n\033[1;38;5;213m╚";
+        
+        // Calculate the length of the bottom border
+        int lineLength = 11 + getCurrentHarmonyName().length() + 10;
+        for (int i = 0; i < lineLength; i++) {
+            std::cout << "═";
+        }
+        std::cout << "╝\033[0m\n\n";
+        
+        // Display detailed color information with enhanced formatting
+        std::cout << "\033[1m🎨 Harmony Palette Details:\033[0m\n";
         for (size_t i = 0; i < harmonyColors.size(); i++) {
             const Color& color = harmonyColors[i];
-            std::cout << "Color " << (i + 1) << ": " << color.getHexCode() << " " 
-                      << color.getColoredChar(' ') << " ";
+            
+            // Create a colorful indicator with number
+            std::cout << "\033[1m" << (i + 1) << ":\033[0m ";
+            
+            // Show color blocks
+            for (int j = 0; j < 5; j++) {
+                std::cout << color.getColoredChar('█');
+            }
+            
+            // Show color information
+            std::cout << " " << color.getHexCode() << " ";
             
             // Show whether this is the base color or a harmony color
             if (i == 0) {
-                std::cout << "\033[1m(Base Color)\033[0m";
+                std::cout << "\033[1;38;5;220m(Base Color)\033[0m";
             } else {
                 std::cout << "HSV(" << (int)color.h << "°, " 
                           << (int)(color.s * 100) << "%, " 

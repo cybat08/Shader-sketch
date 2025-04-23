@@ -1,6 +1,6 @@
 #!/bin/bash
 # One-Click Installation for 3D Model Painter
-# Works on Linux, macOS, and Windows (with Git Bash or WSL)
+# Works on Linux, macOS, and Windows (with Git Bash, WSL, or MSYS2)
 
 echo "=== 3D Model Painter: Easy Installation ==="
 echo "Setting up your 3D Model Painter application..."
@@ -9,10 +9,24 @@ echo "Setting up your 3D Model Painter application..."
 echo "✓ Setting permissions..."
 chmod +x *.sh 2>/dev/null || true
 
-# Detect OS
+# Detect OS and environment
 if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
     echo "✓ Windows system detected"
     IS_WINDOWS=1
+    
+    # Check if running in MSYS2 environment
+    if [[ -n "$MSYSTEM" ]]; then
+        echo "✓ MSYS2 environment detected"
+        echo "For the best experience with MSYS2, we recommend using our specialized MSYS2 installer."
+        read -p "Would you like to use the MSYS2 installer instead? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "Launching MSYS2 installer..."
+            chmod +x msys2_install.sh
+            ./msys2_install.sh
+            exit 0
+        fi
+    fi
 else
     echo "✓ Unix-based system detected (Linux/macOS)"
     IS_WINDOWS=0

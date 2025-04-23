@@ -13,7 +13,7 @@ A powerful C++ desktop application for 3D model painting, offering professional-
 - Multiple painting tools (Brush, Rainbow, Pattern, Stamp, and more)
 - Advanced effects for a more fun and engaging experience
 - Multiple export formats (OBJ, SVG, PPM, TXT)
-- Cross-platform compatibility (Linux, macOS, Windows)
+- Cross-platform compatibility (Linux, macOS, Windows, MSYS2)
 
 ## Installation
 
@@ -21,6 +21,13 @@ A powerful C++ desktop application for 3D model painting, offering professional-
 
 #### Windows Users
 Simply double-click the `install.bat` file and follow the on-screen instructions.
+
+#### MSYS2 Users (Windows)
+For Windows users with MSYS2 installed, you can use our optimized MSYS2 installer:
+```bash
+./msys2_install.sh
+```
+See the [MSYS2 installation guide](MSYS2_README.md) for detailed instructions.
 
 #### Linux/Mac Users
 Open a terminal in the application folder and run:
@@ -63,6 +70,8 @@ brew install glm glfw
 
 # On Windows:
 # Use the windows_build.bat script
+# Or for MSYS2:
+pacman -S mingw-w64-x86_64-glfw mingw-w64-x86_64-glm
 
 # Build using CMake
 mkdir -p build && cd build

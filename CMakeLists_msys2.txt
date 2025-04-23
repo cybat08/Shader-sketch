@@ -1,0 +1,93 @@
+cmake_minimum_required(VERSION 3.10)
+project(3DModelPainter VERSION 1.0)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Output binary in the main directory for easy access
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# MSYS2 specific settings
+if(MINGW OR MSYS)
+    message(STATUS "MSYS2/MinGW environment detected")
+    set(MSYS2_BUILD TRUE)
+else()
+    set(MSYS2_BUILD FALSE)
+endif()
+
+# Find required packages
+if(MSYS2_BUILD)
+    # In MSYS2 we will use the system-provided packages
+    find_package(OpenGL REQUIRED)
+    find_package(PkgConfig QUIET)
+    
+    if(PKG_CONFIG_FOUND)
+        pkg_check_modules(GLFW QUIET glfw3)
+        pkg_check_modules(GLM QUIET glm)
+    endif()
+else()
+    # For non-MSYS2 builds, use our stub/minimal implementations
+    include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
+    return()
+endif()
+
+# Include directories
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${OPENGL_INCLUDE_DIR}
+    ${GLFW_INCLUDE_DIRS}
+)
+
+# Source files
+set(SOURCES 
+    src/main.cpp
+    src/application.cpp
+    src/model.cpp
+    src/camera.cpp
+    src/renderer.cpp
+    src/shader.cpp
+    src/texture.cpp
+    src/ui.cpp
+    src/layer.cpp
+    src/paint_tool.cpp
+    src/project.cpp
+    src/utils.cpp
+)
+
+if(MSYS2_BUILD)
+    # For MSYS2 builds, we'll use EnhancedModelPainter instead
+    add_executable(EnhancedModelPainter_MSYS2 EnhancedModelPainter.cpp)
+    
+    # Also build the fun version
+    add_executable(EnhancedFunModelPainter_MSYS2 EnhancedFunModelPainter.cpp)
+    
+    # Simple build
+    add_executable(SimpleModelPainter_MSYS2 
+        ${CMAKE_CURRENT_SOURCE_DIR}/simple_build/SimpleModelPainter.cpp)
+    
+    message(STATUS "MSYS2 build configuration complete")
+    message(STATUS "Build these targets with: cmake --build .")
+endif()
+
+# Set properties for Windows application
+if(WIN32)
+    # Add icon resource if available
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources.rc")
+        set(SOURCES ${SOURCES} resources.rc)
+    endif()
+    
+    # Set up executable properties
+    if(MSYS2_BUILD)
+        set_target_properties(EnhancedModelPainter_MSYS2 PROPERTIES
+            WIN32_EXECUTABLE TRUE
+            OUTPUT_NAME "EnhancedModelPainter"
+        )
+    endif()
+endif()
+
+# Print configuration summary
+message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
+message(STATUS "CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+message(STATUS "MSYS2_BUILD: ${MSYS2_BUILD}")
