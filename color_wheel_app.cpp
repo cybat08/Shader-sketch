@@ -2,6 +2,12 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <map>
+#include <vector>
+#include <algorithm>
+#include <thread>
+#include <chrono>
+#include <iomanip>
 
 // Define ANSI color codes to ensure they're available regardless of the including file
 #define RESET         "\033[0m"
@@ -172,7 +178,7 @@ private:
         
         // Display a larger color sample with the selected color
         for (int i = 0; i < 30; i++) {
-            std::cout << selectedColor.getColoredChar('█');
+            std::cout << selectedColor.getColoredChar('#');
         }
         std::cout << " \033[1;38;5;213m║\033[0m\n";
         
@@ -230,7 +236,7 @@ private:
             const color_wheel::Color& color = harmonyColors[i];
             std::cout << "\033[1m" << (i+1) << ":\033[0m";
             for (int j = 0; j < 3; j++) {
-                std::cout << color.getColoredChar('█');
+                std::cout << color.getColoredChar('#');
             }
             std::cout << " ";
         }
@@ -245,7 +251,7 @@ private:
             
             // Color preview
             for (int j = 0; j < 3; j++) {
-                std::cout << color.getColoredChar('█');
+                std::cout << color.getColoredChar('#');
             }
             
             // Position on wheel
@@ -290,7 +296,7 @@ private:
             // Display color blocks
             std::cout << "\033[1m" << (i+1) << ":\033[0m";
             for (int j = 0; j < 3; j++) {
-                std::cout << colorHistory[i].getColoredChar('█');
+                std::cout << colorHistory[i].getColoredChar('#');
             }
             std::cout << " ";
         }

@@ -1,11 +1,11 @@
-modules = ["cpp"]
+modules = ["cpp", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"
 packages = ["cmake", "xorg.libX11", "xorg.libXrandr", "xorg.libXi", "xorg.libXcursor", "xorg.libXinerama", "libGL", "libGLU", "glfw", "glm", "assimp", "glew", "stb", "nlohmann_json", "sfml", "zip", "unzip", "imagemagick"]
 
 [workflows]
-runButton = "Build and Run 3D Model Painter"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
@@ -51,6 +51,10 @@ args = "Run Enhanced Model Painter Demo"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Run Enhanced Fun Model Painter"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Simple GUI Application"
 
 [[workflows.workflow]]
 name = "Build and Run 3D Model Painter"
@@ -192,6 +196,20 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "./EnhancedFunModelPainter"
+
+[[workflows.workflow]]
+name = "Run Simple GUI Application"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./ShaderSketch_GUI_Simple"
 
 [deployment]
 run = ["sh", "-c", "mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./3DModelPainter"]

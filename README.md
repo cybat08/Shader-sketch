@@ -14,6 +14,7 @@ A powerful C++ desktop application for 3D model painting, offering professional-
 - Advanced effects for a more fun and engaging experience
 - Multiple export formats (OBJ, SVG, PPM, TXT)
 - Cross-platform compatibility (Linux, macOS, Windows, MSYS2)
+- Modern GUI interface option using Dear ImGui (alongside classic terminal interface)
 
 ## Installation
 
@@ -96,6 +97,49 @@ After installation:
 ./ColorModelPainter           # Color-focused version
 ./build/3DModelPainter        # Full 3D version (if built)
 ```
+
+### GUI Version
+
+There are two GUI options available:
+
+#### Simple Terminal GUI 
+
+For machines with limited graphical capabilities, a terminal-based GUI is available:
+
+```bash
+# Build the simple GUI version
+g++ -std=c++17 simple_gui.cpp -o ShaderSketch_GUI_Simple
+
+# Run the simple GUI application
+./ShaderSketch_GUI_Simple
+```
+
+The Simple GUI provides:
+- Full text-based GUI with color support
+- Layer management
+- Multiple painting tools
+- Color selection
+- Easy-to-use command interface
+
+#### Advanced ImGui-based GUI (requires OpenGL)
+
+For a more modern graphical interface (requires OpenGL support):
+
+```bash
+# Build the advanced GUI version
+chmod +x build_gui.sh
+./build_gui.sh
+
+# Run the GUI application
+./ShaderSketch_GUI
+```
+
+The advanced GUI version provides:
+- Intuitive drag-and-drop functionality
+- Interactive color wheel
+- Real-time canvas preview
+- Layer management panel
+- Dockable windows for customization
 
 ## Windows Package
 

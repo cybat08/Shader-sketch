@@ -415,7 +415,7 @@ public:
                         std::cout << wheelColor.getANSIBgColor() << (harmonyIndex + 1) << "\033[0m";
                     } else {
                         // Regular wheel point with full block for better color display
-                        std::cout << wheelColor.getColoredChar('█');
+                        std::cout << wheelColor.getColoredChar('#');
                     }
                 } else {
                     // Outside the wheel
@@ -442,7 +442,7 @@ public:
             const Color& color = harmonyColors[i];
             std::cout << "\033[1m" << (i+1) << ":\033[0m ";
             for (int j = 0; j < 3; j++) {
-                std::cout << color.getColoredChar('█');
+                std::cout << color.getColoredChar('#');
             }
             std::cout << " ";
         }
@@ -465,7 +465,7 @@ public:
             
             // Show color blocks
             for (int j = 0; j < 5; j++) {
-                std::cout << color.getColoredChar('█');
+                std::cout << color.getColoredChar('#');
             }
             
             // Show color information

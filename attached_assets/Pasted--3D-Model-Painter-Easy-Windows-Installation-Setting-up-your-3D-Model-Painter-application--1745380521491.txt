@@ -1,0 +1,132 @@
+=== 3D Model Painter: Easy Windows Installation ===
+Setting up your 3D Model Painter application...
+- Compiling Enhanced Fun Model Painter...
+In file included from EnhancedFunModelPainter.cpp:19:
+./color_wheel.h:418:64: error: character too large for enclosing character literal type
+  418 |                         std::cout << wheelColor.getColoredChar('█');
+      |                                                                ^
+./color_wheel.h:445:51: error: character too large for enclosing character literal type
+  445 |                 std::cout << color.getColoredChar('█');
+      |                                                   ^
+./color_wheel.h:468:51: error: character too large for enclosing character literal type
+  468 |                 std::cout << color.getColoredChar('█');
+      |                                                   ^
+In file included from EnhancedFunModelPainter.cpp:20:
+./color_wheel_app.cpp:175:55: error: character too large for enclosing character literal type
+  175 |             std::cout << selectedColor.getColoredChar('█');
+      |                                                       ^
+./color_wheel_app.cpp:233:51: error: character too large for enclosing character literal type
+  233 |                 std::cout << color.getColoredChar('█');
+      |                                                   ^
+./color_wheel_app.cpp:248:51: error: character too large for enclosing character literal type
+  248 |                 std::cout << color.getColoredChar('█');
+      |                                                   ^
+./color_wheel_app.cpp:293:61: error: character too large for enclosing character literal type
+  293 |                 std::cout << colorHistory[i].getColoredChar('█');
+      |                                                             ^
+7 errors generated.
+! Compilation failed. Trying simpler version...
+- Compiling Fun Model Painter...
+In file included from FunModelPainter.cpp:18:
+./color_wheel.h:418:64: error: character too large for enclosing character literal type
+  418 |                         std::cout << wheelColor.getColoredChar('█');
+      |                                                                ^
+./color_wheel.h:445:51: error: character too large for enclosing character literal type
+  445 |                 std::cout << color.getColoredChar('█');
+      |                                                   ^
+./color_wheel.h:468:51: error: character too large for enclosing character literal type
+  468 |                 std::cout << color.getColoredChar('█');
+      |                                                   ^
+In file included from FunModelPainter.cpp:19:
+./color_wheel_app.cpp:77:10: error: no template named 'map' in namespace 'std'; did you mean 'max'?
+   77 |     std::map<std::string, std::pair<std::string, std::string>> harmonyTips = {
+      |     ~~~~~^~~
+      |          max
+C:/llvm-mingw/include/c++/v1/__algorithm/max.h:29:1: note: 'max' declared here
+   29 | max(_LIBCPP_LIFETIMEBOUND const _Tp& __a, _LIBCPP_LIFETIMEBOUND const _Tp& __b, _Compare __comp) {
+      | ^
+In file included from FunModelPainter.cpp:19:
+./color_wheel_app.cpp:77:10: error: member 'max' cannot have template arguments
+   77 |     std::map<std::string, std::pair<std::string, std::string>> harmonyTips = {
+      |          ^  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+./color_wheel_app.cpp:77:10: error: non-friend class member 'max' cannot have a qualified name
+   77 |     std::map<std::string, std::pair<std::string, std::string>> harmonyTips = {
+      |     ~~~~~^
+./color_wheel_app.cpp:77:10: error: a type specifier is required for all declarations
+./color_wheel_app.cpp:77:63: error: expected ';' at end of declaration list
+   77 |     std::map<std::string, std::pair<std::string, std::string>> harmonyTips = {
+      |                                                               ^
+      |                                                               ;
+./color_wheel_app.cpp:109:10: error: no template named 'map' in namespace 'std'; did you mean 'max'?
+  109 |     std::map<std::string, std::vector<std::string>> harmonyExamples = {
+      |     ~~~~~^~~
+      |          max
+C:/llvm-mingw/include/c++/v1/__algorithm/max.h:29:1: note: 'max' declared here
+   29 | max(_LIBCPP_LIFETIMEBOUND const _Tp& __a, _LIBCPP_LIFETIMEBOUND const _Tp& __b, _Compare __comp) {
+      | ^
+In file included from FunModelPainter.cpp:19:
+./color_wheel_app.cpp:109:10: error: member 'max' cannot have template arguments
+  109 |     std::map<std::string, std::vector<std::string>> harmonyExamples = {
+      |          ^  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+./color_wheel_app.cpp:109:10: error: non-friend class member 'max' cannot have a qualified name
+  109 |     std::map<std::string, std::vector<std::string>> harmonyExamples = {
+      |     ~~~~~^
+./color_wheel_app.cpp:109:10: error: a type specifier is required for all declarations
+./color_wheel_app.cpp:109:10: error: duplicate member 'max'
+./color_wheel_app.cpp:77:10: note: previous declaration is here
+   77 |     std::map<std::string, std::pair<std::string, std::string>> harmonyTips = {
+      |          ^
+./color_wheel_app.cpp:109:52: error: expected ';' at end of declaration list
+  109 |     std::map<std::string, std::vector<std::string>> harmonyExamples = {
+      |                                                    ^
+      |                                                    ;
+./color_wheel_app.cpp:175:55: error: character too large for enclosing character literal type
+  175 |             std::cout << selectedColor.getColoredChar('█');
+      |                                                       ^
+./color_wheel_app.cpp:204:35: error: use of undeclared identifier 'harmonyTips'; did you mean 'harmonyName'?
+  204 |         std::string description = harmonyTips[harmonyName].first;
+      |                                   ^~~~~~~~~~~
+      |                                   harmonyName
+./color_wheel_app.cpp:196:21: note: 'harmonyName' declared here
+  196 |         std::string harmonyName = wheel.getCurrentHarmonyName();
+      |                     ^
+./color_wheel_app.cpp:204:46: error: no viable overloaded operator[] for type 'std::string' (aka 'basic_string<char>')
+  204 |         std::string description = harmonyTips[harmonyName].first;
+      |                                   ~~~~~~~~~~~^~~~~~~~~~~~
+C:/llvm-mingw/include/c++/v1/string:1344:71: note: candidate function not viable: no known conversion from 'std::string'
+      (aka 'basic_string<char>') to 'size_type' (aka 'unsigned int') for 1st argument
+ 1344 |   _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX20 const_reference operator[](size_type __pos) const _NOEXCEPT {
+      |                                                                       ^          ~~~~~~~~~~~~~~~
+C:/llvm-mingw/include/c++/v1/string:1352:65: note: candidate function not viable: no known conversion from 'std::string'
+      (aka 'basic_string<char>') to 'size_type' (aka 'unsigned int') for 1st argument
+ 1352 |   _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX20 reference operator[](size_type __pos) _NOEXCEPT {
+      |                                                                 ^          ~~~~~~~~~~~~~~~
+In file included from FunModelPainter.cpp:19:
+./color_wheel_app.cpp:205:29: error: use of undeclared identifier 'harmonyTips'; did you mean 'harmonyName'?
+  205 |         std::string usage = harmonyTips[harmonyName].second;
+      |                             ^~~~~~~~~~~
+      |                             harmonyName
+./color_wheel_app.cpp:196:21: note: 'harmonyName' declared here
+  196 |         std::string harmonyName = wheel.getCurrentHarmonyName();
+      |                     ^
+./color_wheel_app.cpp:205:40: error: no viable overloaded operator[] for type 'std::string' (aka 'basic_string<char>')
+  205 |         std::string usage = harmonyTips[harmonyName].second;
+      |                             ~~~~~~~~~~~^~~~~~~~~~~~
+C:/llvm-mingw/include/c++/v1/string:1344:71: note: candidate function not viable: no known conversion from 'std::string'
+      (aka 'basic_string<char>') to 'size_type' (aka 'unsigned int') for 1st argument
+ 1344 |   _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX20 const_reference operator[](size_type __pos) const _NOEXCEPT {
+      |                                                                       ^          ~~~~~~~~~~~~~~~
+C:/llvm-mingw/include/c++/v1/string:1352:65: note: candidate function not viable: no known conversion from 'std::string'
+      (aka 'basic_string<char>') to 'size_type' (aka 'unsigned int') for 1st argument
+ 1352 |   _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX20 reference operator[](size_type __pos) _NOEXCEPT {
+      |                                                                 ^          ~~~~~~~~~~~~~~~
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+20 errors generated.
+! Compilation failed for FunModelPainter.
++ Created launcher: Run_3D_Model_Painter.bat
+
+=== INSTALLATION COMPLETE! ===
+To start the application, double-click Run_3D_Model_Painter.bat
+
+Enjoy painting your 3D models!
+Press any key to continue . . .
