@@ -17,22 +17,22 @@ A powerful C++ desktop application for 3D model painting, offering professional-
 
 ## Installation
 
-### Quick Install
+### Super Easy Installation
 
-The simplest way to install 3D Model Painter is to use the provided installation script:
+#### Windows Users
+Simply double-click the `install.bat` file and follow the on-screen instructions.
 
+#### Linux/Mac Users
+Open a terminal in the application folder and run:
 ```bash
-# Make the installation script executable
-chmod +x install.sh
-
-# Run the installation script
-./install.sh
+./easy_install.sh
 ```
 
-The installation script will:
-1. Compile the different versions of the application
-2. Create desktop shortcuts for easy access
-3. Set up everything you need to start using 3D Model Painter
+The installation script automatically:
+1. Detects your operating system
+2. Compiles the application
+3. Creates desktop shortcuts
+4. Sets up a launcher to run the application with one click
 
 ### Manual Installation
 

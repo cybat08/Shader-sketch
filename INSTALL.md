@@ -2,24 +2,31 @@
 
 This guide explains how to install and run the 3D Model Painter application on your system.
 
-## Quick Installation
+## Super Easy Installation
 
-The easiest way to install 3D Model Painter is to use the provided installation script:
+### Windows Users
 
-1. Make the installation script executable:
+1. Simply double-click the `install.bat` file
+2. Wait for the installation to complete
+3. Double-click the `Run_3D_Model_Painter.bat` file to start the application
+
+That's it! No additional steps required.
+
+### Linux/Mac Users
+
+1. Open a terminal in the application folder
+2. Run the easy install script:
    ```bash
-   chmod +x install.sh
+   ./easy_install.sh
    ```
-
-2. Run the installation script:
+3. Start the application using:
    ```bash
-   ./install.sh
+   ./EnhancedFunModelPainter
    ```
+   
+   Or using the desktop shortcut created during installation.
 
-The script will automatically:
-- Compile all versions of the 3D Model Painter
-- Set up necessary files and directories
-- Create desktop shortcuts (if applicable)
+The script automatically detects your system and sets up everything for you.
 
 ## Running the Application
 

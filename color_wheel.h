@@ -226,9 +226,11 @@ public:
                 
             case HarmonyType::MONOCHROMATIC:
                 // Add variations of the same hue with different saturation/value
-                harmony.push_back(Color(h, s * 0.7f, v));
-                harmony.push_back(Color(h, s, v * 0.7f));
-                harmony.push_back(Color(h, s * 0.7f, v * 0.7f));
+                // More pleasing gradations for better visual appeal
+                harmony.push_back(Color(h, std::max(0.2f, s - 0.3f), std::min(1.0f, v + 0.1f))); // Lighter, less saturated
+                harmony.push_back(Color(h, std::min(1.0f, s + 0.1f), std::max(0.4f, v - 0.2f))); // Darker, more saturated
+                harmony.push_back(Color(h, std::max(0.1f, s - 0.5f), v)); // Much less saturated, same brightness
+                harmony.push_back(Color(h, s, std::max(0.3f, v - 0.4f))); // Much darker, same saturation
                 break;
         }
         
@@ -396,17 +398,38 @@ public:
             std::cout << "\n";
         }
         
-        // Display harmony information
-        std::cout << "\nHarmony: " << getCurrentHarmonyName() << " (";
+        // Display harmony information with more visual appeal
+        std::cout << "\n\033[1m" << getCurrentHarmonyName() << " Harmony\033[0m (";
         std::cout << selectedHarmony + 1 << "/" << harmonies.size() << ")\n\n";
         
-        // Display harmony colors
+        // Display harmony colors in a more visually appealing way
+        std::cout << "Harmony Preview: ";
+        for (size_t i = 0; i < harmonyColors.size(); i++) {
+            // Display color blocks next to each other
+            const Color& color = harmonyColors[i];
+            std::cout << color.getColoredChar(' ') << color.getColoredChar(' ') << color.getColoredChar(' ');
+        }
+        std::cout << "\n\n";
+        
+        // Display detailed color information
         for (size_t i = 0; i < harmonyColors.size(); i++) {
             const Color& color = harmonyColors[i];
             std::cout << "Color " << (i + 1) << ": " << color.getHexCode() << " " 
-                      << color.getColoredChar(' ') << " " 
-                      << color.toString() << "\n";
+                      << color.getColoredChar(' ') << " ";
+            
+            // Show whether this is the base color or a harmony color
+            if (i == 0) {
+                std::cout << "\033[1m(Base Color)\033[0m";
+            } else {
+                std::cout << "HSV(" << (int)color.h << "°, " 
+                          << (int)(color.s * 100) << "%, " 
+                          << (int)(color.v * 100) << "%)";
+            }
+            std::cout << "\n";
         }
+        
+        // Add a visual separator
+        std::cout << "\n" << std::string(40, '-') << "\n";
         
         // Display help text
         std::cout << "\nControls:\n";

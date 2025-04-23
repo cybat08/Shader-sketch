@@ -1678,7 +1678,7 @@ private:
         std::cout << "  " << FG_BRIGHT_YELLOW << "f [text]" << RESET << " - Set text for Text tool" << std::endl;
         
         std::cout << BOLD << FG_BRIGHT_GREEN << "Advanced Features:" << RESET << std::endl;
-        std::cout << "  " << FG_BRIGHT_YELLOW << "w" << RESET << "        - Open interactive color wheel with harmony suggestions" << std::endl;
+        std::cout << "  " << FG_BRIGHT_YELLOW << "w" << RESET << "        - Open enhanced color wheel with harmony suggestions for professional color selection" << std::endl;
         std::cout << "  " << FG_BRIGHT_YELLOW << "x" << RESET << "        - Export project (TXT, PPM, SVG, OBJ)" << std::endl;
         std::cout << "  " << FG_BRIGHT_YELLOW << "o [option]" << RESET << " - Toggle UI options (color, shortcuts)" << std::endl;
         
@@ -1749,15 +1749,46 @@ private:
         }
     }
     
-    // Open the interactive color wheel
+    // Open the interactive color wheel with harmony suggestions
     void openColorWheel() {
         if (!currentTool) return;
         
         // Get current RGB color from the tool
         const Color& toolColor = currentTool->getColor();
+        std::string colorName = toolColor.getName();
         
-        // Create a color wheel adapter
-        InteractiveColorWheel colorWheel(0.0f, 1.0f, 1.0f); // Default HSV
+        // Get initial HSV values based on color name to start with something sensible
+        float h = 0.0f;   // Default red hue
+        float s = 1.0f;   // Full saturation
+        float v = 1.0f;   // Full brightness
+        
+        // Approximate hue values based on color name
+        if (colorName.find("Red") != std::string::npos) {
+            h = 0.0f;
+        } else if (colorName.find("Orange") != std::string::npos) {
+            h = 30.0f;
+        } else if (colorName.find("Yellow") != std::string::npos) {
+            h = 60.0f;
+        } else if (colorName.find("Green") != std::string::npos) {
+            h = 120.0f;
+        } else if (colorName.find("Cyan") != std::string::npos) {
+            h = 180.0f;
+        } else if (colorName.find("Blue") != std::string::npos) {
+            h = 240.0f;
+        } else if (colorName.find("Purple") != std::string::npos) {
+            h = 270.0f;
+        } else if (colorName.find("Magenta") != std::string::npos) {
+            h = 300.0f;
+        }
+        
+        // Create a color wheel with either the estimated or default HSV values
+        InteractiveColorWheel colorWheel(h, s, v);
+        
+        std::cout << BOLD << FG_BRIGHT_MAGENTA << "☆ Opening Color Wheel with Harmony Suggestions ☆" << RESET << std::endl;
+        std::cout << "Use h+/h- to adjust hue, s+/s- for saturation, v+/v- for brightness" << std::endl;
+        std::cout << "Press 'n/p' to cycle through different harmony types" << std::endl;
+        std::cout << "Press numbers 1-5 to select colors from the current harmony" << std::endl;
+        std::cout << "Press 'a' to toggle between simplified and advanced visualization" << std::endl;
         
         // Run the color wheel UI
         color_wheel::Color selectedColor = colorWheel.run();
@@ -1772,7 +1803,14 @@ private:
         Color newColor(toolColor.getSymbol(), ansiCode, colorName);
         currentTool->setColor(newColor);
         
-        std::cout << "Color updated from color wheel!" << std::endl;
+        std::cout << BOLD << FG_GREEN << "✓ " << RESET 
+                  << "Color updated! Selected " << colorName << " (" 
+                  << selectedColor.getHexCode() << ")" << std::endl;
+        
+        // Display a general color theory tip since we don't have direct access to the harmonyName
+        std::cout << FG_BRIGHT_CYAN << "ℹ Color Tip: " << RESET 
+                  << "Color harmony creates visually appealing combinations. "
+                  << "Try complementary colors for contrast or analogous colors for a harmonious feel." << std::endl;
     }
     
     // Export project in various formats
