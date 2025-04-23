@@ -1,0 +1,79 @@
+cmake_minimum_required(VERSION 3.10)
+project(ShaderSketch_GUI VERSION 1.0)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find required packages
+find_package(OpenGL REQUIRED)
+
+# Include directories
+include_directories(${CMAKE_SOURCE_DIR})
+
+# Set build type if not specified
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# Download and include Dear ImGui and GLFW
+include(FetchContent)
+
+# GLFW
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.3.8
+)
+FetchContent_MakeAvailable(glfw)
+
+# Download ImGui (we'll manually include the files)
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.89.9
+)
+FetchContent_MakeAvailable(imgui)
+
+# ImGui source files
+set(IMGUI_SOURCES
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_demo.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
+# Application source files
+set(APP_SOURCES
+    gui_interface.cpp
+)
+
+# Create executable
+add_executable(ShaderSketch_GUI ${APP_SOURCES} ${IMGUI_SOURCES})
+
+# Include directories for ImGui
+target_include_directories(ShaderSketch_GUI PRIVATE
+    ${imgui_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}/backends
+)
+
+# Link libraries
+target_link_libraries(ShaderSketch_GUI PRIVATE
+    OpenGL::GL
+    glfw
+)
+
+# Platform-specific configurations
+if(WIN32)
+    target_link_libraries(ShaderSketch_GUI PRIVATE opengl32)
+elseif(UNIX AND NOT APPLE)
+    target_link_libraries(ShaderSketch_GUI PRIVATE GL dl)
+elseif(APPLE)
+    target_link_libraries(ShaderSketch_GUI PRIVATE "-framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo")
+endif()
+
+# Install
+install(TARGETS ShaderSketch_GUI DESTINATION bin)

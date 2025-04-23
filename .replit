@@ -5,7 +5,7 @@ channel = "stable-24_05"
 packages = ["cmake", "xorg.libX11", "xorg.libXrandr", "xorg.libXi", "xorg.libXcursor", "xorg.libXinerama", "libGL", "libGLU", "glfw", "glm", "assimp", "glew", "stb", "nlohmann_json", "sfml", "zip", "unzip", "imagemagick"]
 
 [workflows]
-runButton = "Project"
+runButton = "Build and Run 3D Model Painter"
 
 [[workflows.workflow]]
 name = "Project"
