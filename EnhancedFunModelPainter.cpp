@@ -2,7 +2,6 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#include <map>
 #include <cmath>
 #include <iomanip>
 #include <thread>
@@ -10,11 +9,10 @@
 #include <ctime>
 #include <cstdlib>
 #include <algorithm>
-#include <cctype>
-#include <sstream>
 #include <memory>
 #include <limits>
 #include <random>
+#include <map>
 #include <functional>
 
 // Color wheel with harmony suggestions
@@ -52,32 +50,230 @@
 #define BG_BRIGHT_GREEN   "\033[102m"
 #define BG_BRIGHT_MAGENTA "\033[105m"
 
-// Special characters and icons
+// Special characters and icons - only keeping those actively used in the application
 #define ICON_CHECK        "✓"
-#define ICON_CROSS        "✗"
 #define ICON_WARNING      "⚠"
 #define ICON_INFO         "ℹ"
 #define ICON_HEART        "♥"
 #define ICON_DIAMOND      "♦"
-#define ICON_CLUB         "♣"
-#define ICON_SPADE        "♠"
 #define ICON_STAR         "★"
 #define ICON_SPARKLE      "✨"
 #define ICON_SUN          "☀"
 #define ICON_MOON         "☽"
 #define ICON_UMBRELLA     "☂"
-#define ICON_SNOWFLAKE    "❄"
-#define ICON_FLOWER       "❀"
-#define ICON_MUSIC        "♪"
 #define ICON_SMILE        "☺"
-#define ICON_BRUSH        "🖌"
-#define ICON_PALETTE      "🎨"
-#define ICON_ERASER       "⌫"
+#define ICON_FLOWER       "❀"
+#define ICON_SNOWFLAKE    "❄"
+#define ICON_CIRCLE       "○"
+#define ICON_TRIANGLE     "△"
 
 // Forward declarations
 class PaintTool;
 class Layer;
 class Project;
+
+// Context-sensitive help tooltip system
+class HelpTooltip {
+public:
+    // Types of tooltips
+    enum class ToolTipType {
+        BASIC,          // Basic usage information
+        TECHNIQUE,      // Advanced technique explanation
+        SHORTCUT,       // Keyboard shortcut reminder
+        WARNING,        // Warning or caution about a feature
+        PRO_TIP         // Professional tip/best practice
+    };
+    
+    // Default constructor needed for std::map
+    HelpTooltip() : content("No tooltip content"), type(ToolTipType::BASIC) {}
+    
+    // Constructor
+    HelpTooltip(const std::string& content, ToolTipType type = ToolTipType::BASIC)
+        : content(content), type(type) {}
+    
+    // Display the tooltip with appropriate styling
+    void display() const {
+        std::string prefix;
+        std::string color;
+        
+        switch (type) {
+            case ToolTipType::BASIC:
+                prefix = std::string(ICON_INFO) + " TIP: ";
+                color = FG_CYAN;
+                break;
+            case ToolTipType::TECHNIQUE:
+                prefix = std::string(ICON_STAR) + " TECHNIQUE: ";
+                color = FG_YELLOW;
+                break;
+            case ToolTipType::SHORTCUT:
+                prefix = std::string(ICON_DIAMOND) + " SHORTCUT: ";
+                color = FG_GREEN;
+                break;
+            case ToolTipType::WARNING:
+                prefix = std::string(ICON_WARNING) + " CAUTION: ";
+                color = FG_RED;
+                break;
+            case ToolTipType::PRO_TIP:
+                prefix = std::string(ICON_SPARKLE) + " PRO TIP: ";
+                color = FG_MAGENTA;
+                break;
+        }
+        
+        std::cout << color << prefix << RESET << content << std::endl;
+    }
+    
+    // Static method to get the appropriate tooltip for a context
+    static HelpTooltip getTooltipForContext(const std::string& context);
+    
+private:
+    std::string content;
+    ToolTipType type;
+};
+
+// Global tooltip repository
+class TooltipManager {
+public:
+    static TooltipManager& getInstance() {
+        static TooltipManager instance;
+        return instance;
+    }
+    
+    // Get tooltip for a specific context
+    HelpTooltip getTooltip(const std::string& context) const {
+        auto it = tooltips.find(context);
+        if (it != tooltips.end()) {
+            return it->second;
+        }
+        
+        // Default tooltip if context not found
+        return HelpTooltip("No specific tip available for this feature.", 
+                          HelpTooltip::ToolTipType::BASIC);
+    }
+    
+    // Show tooltip for a specific context
+    void showTooltip(const std::string& context) const {
+        getTooltip(context).display();
+    }
+    
+private:
+    TooltipManager() {
+        // Initialize all tooltips
+        initializeTooltips();
+    }
+    
+    void initializeTooltips() {
+        // Tool-specific tooltips
+        tooltips["brush"] = HelpTooltip(
+            "Apply varying pressure for different brush effects. Try quick, short strokes for texture.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["eraser"] = HelpTooltip(
+            "Use small eraser size for detail work and larger sizes for broader changes.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["lineart"] = HelpTooltip(
+            "Create perfect curves by using multiple connected line segments rather than one long line.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["rainbow"] = HelpTooltip(
+            "Rainbow tool creates smooth color transitions. Try drawing in circular motions for interesting patterns.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["stamp"] = HelpTooltip(
+            "Combine multiple stamps with slight position variations to create complex patterns.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["pattern"] = HelpTooltip(
+            "Pattern tool works best when applied systematically across larger areas.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["gradient"] = HelpTooltip(
+            "For subtle gradients, choose colors that are closer together on the color wheel.",
+            HelpTooltip::ToolTipType::PRO_TIP
+        );
+        
+        tooltips["fill"] = HelpTooltip(
+            "Before using fill, ensure there are no gaps in the outline to prevent color leaking.",
+            HelpTooltip::ToolTipType::WARNING
+        );
+        
+        tooltips["effects"] = HelpTooltip(
+            "Layer multiple effects with low intensity for more natural-looking results.",
+            HelpTooltip::ToolTipType::PRO_TIP
+        );
+        
+        tooltips["text"] = HelpTooltip(
+            "Text tool allows basic formatting. Use with pattern tool for interesting text backgrounds.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        // Feature-specific tooltips
+        tooltips["layers"] = HelpTooltip(
+            "Work non-destructively by using separate layers for different elements of your painting.",
+            HelpTooltip::ToolTipType::PRO_TIP
+        );
+        
+        tooltips["color_wheel"] = HelpTooltip(
+            "Try complementary colors for strong contrast or analogous colors for harmony.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["export"] = HelpTooltip(
+            "SVG format is best for graphics that need scaling, while OBJ preserves 3D information.",
+            HelpTooltip::ToolTipType::PRO_TIP
+        );
+        
+        tooltips["uv_unwrap"] = HelpTooltip(
+            "Ensure your UV islands don't overlap to avoid texture artifacts on the 3D model.",
+            HelpTooltip::ToolTipType::WARNING
+        );
+        
+        // Shortcut tooltips
+        tooltips["shortcuts"] = HelpTooltip(
+            "Use number keys 1-0 to quickly switch between tools and colors.",
+            HelpTooltip::ToolTipType::SHORTCUT
+        );
+        
+        tooltips["view_shortcuts"] = HelpTooltip(
+            "Press 'v' for view mode, 'c' to clear, '+/-' to adjust brush size.",
+            HelpTooltip::ToolTipType::SHORTCUT
+        );
+        
+        // Technique tooltips
+        tooltips["blending"] = HelpTooltip(
+            "For smooth color blending, use multiple layers with reduced opacity.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["texturing"] = HelpTooltip(
+            "Create realistic textures by combining pattern tool with manual brush detail work.",
+            HelpTooltip::ToolTipType::TECHNIQUE
+        );
+        
+        tooltips["highlighting"] = HelpTooltip(
+            "Add highlights after base colors for better control over the final look.",
+            HelpTooltip::ToolTipType::PRO_TIP
+        );
+        
+        tooltips["workflow"] = HelpTooltip(
+            "Develop your painting in stages: sketch, base colors, details, then final effects.",
+            HelpTooltip::ToolTipType::PRO_TIP
+        );
+    }
+    
+    std::map<std::string, HelpTooltip> tooltips;
+};
+
+// Implementation of the static method
+HelpTooltip HelpTooltip::getTooltipForContext(const std::string& context) {
+    return TooltipManager::getInstance().getTooltip(context);
+}
 
 // Simple HSV color structure with conversion to RGB
 struct HSV {
@@ -573,8 +769,8 @@ public:
     
     void apply(Layer& layer, int x, int y) override {
         static const std::vector<std::string> symbols = {
-            ICON_HEART, ICON_STAR, ICON_DIAMOND, ICON_CLUB, ICON_SPADE, 
-            ICON_SUN, ICON_MOON, ICON_UMBRELLA, ICON_SMILE, ICON_FLOWER, ICON_SNOWFLAKE
+            ICON_HEART, ICON_STAR, ICON_DIAMOND, ICON_SUN, ICON_MOON, 
+            ICON_CIRCLE, ICON_TRIANGLE, ICON_UMBRELLA, ICON_SMILE, ICON_FLOWER, ICON_SNOWFLAKE
         };
         
         // Update hue by 30 degrees for each paint operation
@@ -595,8 +791,8 @@ public:
     
     void applyWithAnimation(Layer& layer, int x, int y) override {
         static const std::vector<std::string> symbols = {
-            ICON_HEART, ICON_STAR, ICON_DIAMOND, ICON_CLUB, ICON_SPADE, 
-            ICON_SUN, ICON_MOON, ICON_UMBRELLA, ICON_SMILE, ICON_FLOWER, ICON_SNOWFLAKE
+            ICON_HEART, ICON_STAR, ICON_DIAMOND, ICON_SUN, ICON_MOON, 
+            ICON_CIRCLE, ICON_TRIANGLE, ICON_UMBRELLA, ICON_SMILE, ICON_FLOWER, ICON_SNOWFLAKE
         };
         
         if (!useAnimation) {
@@ -1295,12 +1491,20 @@ private:
                 if (toolIndex >= 0 && toolIndex < static_cast<int>(tools.size())) {
                     currentTool = tools[toolIndex].get();
                     std::cout << "Selected tool: " << currentTool->getName() << std::endl;
+                    
+                    // Show contextual help for the selected tool
+                    std::string tooltipContext = getLowercaseToolName();
+                    TooltipManager::getInstance().showTooltip(tooltipContext);
+                    
                 } else if (commandChar == '0') {
                     // Shortcut for selecting eraser tool
                     for (size_t i = 0; i < tools.size(); i++) {
                         if (tools[i]->getName() == "Eraser") {
                             currentTool = tools[i].get();
                             std::cout << "Selected tool: " << currentTool->getName() << std::endl;
+                            
+                            // Show eraser tool tooltip
+                            TooltipManager::getInstance().showTooltip("eraser");
                             break;
                         }
                     }
@@ -1353,6 +1557,9 @@ private:
             
             // Painting commands
             case 'p': case 'P': {
+                // Show painting technique tooltip for current tool
+                TooltipManager::getInstance().showTooltip("painting_technique_" + getLowercaseToolName());
+                
                 int x, y;
                 if (cmd >> x >> y) {
                     Layer* layer = project.getCurrentLayer();
@@ -1409,6 +1616,9 @@ private:
             
             // New layer
             case 'n': case 'N': {
+                // Show layer management tooltip
+                TooltipManager::getInstance().showTooltip("layers");
+                
                 std::string name;
                 std::getline(cmd, name);
                 name = name.empty() ? "Layer " + std::to_string(project.getLayers().size() + 1) : name.substr(1); // Skip leading space
@@ -1471,12 +1681,18 @@ private:
             
             // View canvas
             case 'v': case 'V': {
+                // Show view shortcuts tooltip
+                TooltipManager::getInstance().showTooltip("view_shortcuts");
+                
                 displayCanvas();
                 break;
             }
             
             // Help
             case 'h': case 'H': {
+                // Show keyboard shortcuts tooltip
+                TooltipManager::getInstance().showTooltip("shortcuts");
+                
                 displayHelp();
                 break;
             }
@@ -1753,6 +1969,9 @@ private:
     void openColorWheel() {
         if (!currentTool) return;
         
+        // Show tooltip for color wheel feature
+        TooltipManager::getInstance().showTooltip("color_wheel");
+        
         // Get current RGB color from the tool
         const Color& toolColor = currentTool->getColor();
         std::string colorName = toolColor.getName();
@@ -1798,19 +2017,37 @@ private:
         
         // Apply to the current tool
         std::string ansiCode = newRgb.toAnsiColor();
-        std::string colorName = newRgb.getColorName();
+        std::string newColorName = newRgb.getColorName();
         
-        Color newColor(toolColor.getSymbol(), ansiCode, colorName);
+        Color newColor(toolColor.getSymbol(), ansiCode, newColorName);
         currentTool->setColor(newColor);
         
         std::cout << BOLD << FG_GREEN << "✓ " << RESET 
-                  << "Color updated! Selected " << colorName << " (" 
+                  << "Color updated! Selected " << newColorName << " (" 
                   << selectedColor.getHexCode() << ")" << std::endl;
         
         // Display a general color theory tip since we don't have direct access to the harmonyName
         std::cout << FG_BRIGHT_CYAN << "ℹ Color Tip: " << RESET 
                   << "Color harmony creates visually appealing combinations. "
                   << "Try complementary colors for contrast or analogous colors for a harmonious feel." << std::endl;
+    }
+    
+    // Helper method to get lowercase tool name for tooltip context
+    std::string getLowercaseToolName() const {
+        if (!currentTool) return "";
+        
+        std::string name = currentTool->getName();
+        std::transform(name.begin(), name.end(), name.begin(), 
+                    [](unsigned char c){ return std::tolower(c); });
+        
+        // Remove "tool" suffix if present
+        const std::string suffix = "tool";
+        if (name.size() > suffix.size() && 
+            name.substr(name.size() - suffix.size()) == suffix) {
+            name = name.substr(0, name.size() - suffix.size());
+        }
+        
+        return name;
     }
     
     // Export project in various formats
@@ -1820,6 +2057,10 @@ private:
         std::cout << "2. PPM image (.ppm)" << std::endl;
         std::cout << "3. SVG vector graphic (.svg)" << std::endl;
         std::cout << "4. 3D model (.obj)" << std::endl;
+        
+        // Show export tooltip with best practices
+        TooltipManager::getInstance().showTooltip("export");
+        
         std::cout << "Select format (1-4): ";
         
         int format;

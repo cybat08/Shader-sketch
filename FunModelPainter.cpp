@@ -2,7 +2,6 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#include <map>
 #include <cmath>
 #include <iomanip>
 #include <thread>
@@ -10,7 +9,6 @@
 #include <ctime>
 #include <cstdlib>
 #include <algorithm>
-#include <cctype>
 #include <sstream>
 #include <memory>
 #include <limits>
@@ -49,7 +47,7 @@
 #define BG_WHITE      "\033[47m"
 #define BG_BRIGHT_BLUE    "\033[104m"
 
-// Special icons and symbols
+// Special icons and symbols - only those actually used in the application
 #define ICON_CHECK    "✓"
 #define ICON_WAIT     "⧗"
 #define ICON_WARNING  "⚠"
@@ -58,7 +56,6 @@
 #define ICON_DIAMOND  "♦"
 #define ICON_CLUB     "♣"
 #define ICON_SPADE    "♠"
-#define ICON_NOTE     "♪"
 #define ICON_SUN      "☀"
 #define ICON_MOON     "☽"
 #define ICON_UMBRELLA "☂"

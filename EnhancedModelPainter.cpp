@@ -2,7 +2,6 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#include <map>
 #include <cmath>
 #include <iomanip>
 #include <thread>
@@ -10,14 +9,13 @@
 #include <ctime>
 #include <cstdlib>
 #include <algorithm>
-#include <cctype>
 #include <sstream>
 
 // Color wheel with harmony suggestions
 #include "color_wheel.h"
 #include "color_wheel_app.cpp"
 
-// Windows-specific headers
+// Windows-specific headers for proper console support
 #ifdef _WIN32
 #include <windows.h>
 #endif
