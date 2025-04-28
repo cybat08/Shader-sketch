@@ -1,8 +1,6 @@
-# 3D Model Painter
+# Shader Sketch
 
 A powerful C++ desktop application for 3D model painting, offering professional-grade texture and model editing capabilities with comprehensive export functionality and advanced packaging support.
-
-![3D Model Painter](generated-icon.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
