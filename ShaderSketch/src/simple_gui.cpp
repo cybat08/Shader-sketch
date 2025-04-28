@@ -9,6 +9,7 @@
 #include <sstream>
 #include <map>
 #include <memory>
+#include "../include/color_wheel.h"
 
 /**
  * ShaderSketch Simple GUI Implementation
@@ -323,6 +324,10 @@ struct AppState {
         "Brush", "Eraser", "Line", "Fill", "Rectangle"
     };
     
+    // Color wheel for interactive color selection and harmony
+    color_wheel::ColorWheel colorWheel;
+    bool showColorWheel = false;
+    
     // Initialize the application
     AppState() {
         // Initialize colors
@@ -363,9 +368,182 @@ struct AppState {
         std::cout << "\033[2J\033[1;1H";
     }
     
+    // Display the interactive color wheel
+    void displayColorWheel() {
+        std::cout << BOLD << "Interactive Color Wheel with Harmony Suggestions" << RESET << std::endl;
+        std::cout << std::string(50, '-') << std::endl;
+        
+        // Display the current color wheel and harmonies
+        colorWheel.display();
+        
+        // Get harmony colors
+        auto harmonyColors = colorWheel.getCurrentHarmonyColors();
+        
+        // Display color harmony controls
+        std::cout << std::endl;
+        std::cout << BOLD << "Harmony Controls:" << RESET << std::endl;
+        std::cout << "  h [type] - Change harmony type (0-6)" << std::endl;
+        std::cout << "  s [color] - Select harmony color (1-" << harmonyColors.size() << ")" << std::endl;
+        std::cout << "  u - Use selected color" << std::endl;
+        std::cout << "  a - Adjust hue/saturation/value" << std::endl;
+        std::cout << "  x - Exit color wheel" << std::endl;
+        
+        std::cout << std::endl;
+        std::cout << BOLD << "Current Harmony: " << RESET 
+                  << colorWheel.getCurrentHarmonyName() 
+                  << " (" << (colorWheel.getSelectedHarmony() + 1) << "/" 
+                  << colorWheel.getHarmoniesCount() << ")" << std::endl;
+        
+        // Display the harmony colors as a palette
+        std::cout << BOLD << "Harmony Palette:" << RESET << std::endl;
+        for (size_t i = 0; i < harmonyColors.size(); i++) {
+            std::cout << "  " << (i + 1) << ": ";
+            for (int j = 0; j < 5; j++) { // Show a larger color sample
+                std::cout << harmonyColors[i].getColoredChar('#');
+            }
+            std::cout << " " << harmonyColors[i].getHexCode();
+            
+            if (i == 0) {
+                std::cout << " (Base)";
+            }
+            std::cout << std::endl;
+        }
+        
+        std::cout << std::endl << "> ";
+    }
+    
+    // Convert from color_wheel::Color to application Color
+    void addColorFromColorWheel(const color_wheel::Color& wheelColor) {
+        // Only add if we're under the color limit
+        if (colors.size() < COLOR_COUNT) {
+            // Create ANSI color code
+            std::string ansiCode = "\033[38;2;" + 
+                                std::to_string(wheelColor.r) + ";" + 
+                                std::to_string(wheelColor.g) + ";" + 
+                                std::to_string(wheelColor.b) + "m";
+            
+            // Add the color to the palette
+            colors.push_back(Color(wheelColor.r, wheelColor.g, wheelColor.b, 
+                                  wheelColor.getHexCode(), ansiCode));
+            
+            // Select the new color
+            currentColor = colors.size() - 1;
+        } else {
+            // Replace the current color
+            colors[currentColor] = Color(wheelColor.r, wheelColor.g, wheelColor.b, 
+                                        wheelColor.getHexCode(), 
+                                        wheelColor.getANSIColor());
+        }
+        
+        std::cout << "Color updated to " << wheelColor.getHexCode() << std::endl;
+    }
+    
+    // Handle color wheel interaction
+    bool handleColorWheelCommands(const std::string& command) {
+        if (command.empty()) {
+            return true;
+        }
+        
+        // Split command into parts
+        std::vector<std::string> parts;
+        std::string part;
+        for (char c : command) {
+            if (c == ' ') {
+                if (!part.empty()) {
+                    parts.push_back(part);
+                    part.clear();
+                }
+            } else {
+                part += c;
+            }
+        }
+        if (!part.empty()) {
+            parts.push_back(part);
+        }
+        
+        if (parts.empty()) {
+            return true;
+        }
+        
+        std::string cmd = parts[0];
+        
+        if (cmd == "x") {
+            showColorWheel = false;
+            std::cout << "Exiting color wheel..." << std::endl;
+            return true;
+        } else if (cmd == "h" && parts.size() > 1) {
+            // Change harmony type
+            try {
+                int harmonyType = std::stoi(parts[1]);
+                if (harmonyType >= 0 && harmonyType < colorWheel.getHarmoniesCount()) {
+                    for (int i = 0; i < colorWheel.getHarmoniesCount(); i++) {
+                        if (i != harmonyType) colorWheel.nextHarmony();
+                    }
+                    std::cout << "Switched to " << colorWheel.getCurrentHarmonyName() << " harmony." << std::endl;
+                } else {
+                    std::cout << "Invalid harmony type. Choose 0-" << (colorWheel.getHarmoniesCount() - 1) << std::endl;
+                }
+            } catch (...) {
+                std::cout << "Invalid harmony type" << std::endl;
+            }
+        } else if (cmd == "s" && parts.size() > 1) {
+            // Select harmony color
+            try {
+                int colorIndex = std::stoi(parts[1]) - 1; // 1-based indexing for user
+                auto harmonyColors = colorWheel.getCurrentHarmonyColors();
+                if (colorIndex >= 0 && colorIndex < static_cast<int>(harmonyColors.size())) {
+                    colorWheel.setColor(harmonyColors[colorIndex]);
+                    std::cout << "Selected harmony color " << (colorIndex + 1) << std::endl;
+                } else {
+                    std::cout << "Invalid color index. Choose 1-" << harmonyColors.size() << std::endl;
+                }
+            } catch (...) {
+                std::cout << "Invalid color index" << std::endl;
+            }
+        } else if (cmd == "u") {
+            // Use the selected color
+            addColorFromColorWheel(colorWheel.getSelectedColor());
+            showColorWheel = false;
+            return true;
+        } else if (cmd == "a") {
+            // Simple HSV adjustment mode
+            std::cout << "Enter new HSV values (hue 0-360, saturation 0-100, value 0-100): ";
+            std::string input;
+            std::getline(std::cin, input);
+            
+            std::istringstream iss(input);
+            float h, s, v;
+            if (iss >> h >> s >> v) {
+                // Normalize saturation and value to 0-1 range
+                s /= 100.0f;
+                v /= 100.0f;
+                
+                // Clamp values to valid ranges
+                h = std::min(360.0f, std::max(0.0f, h));
+                s = std::min(1.0f, std::max(0.0f, s));
+                v = std::min(1.0f, std::max(0.0f, v));
+                
+                colorWheel.setColorHSV(h, s, v);
+                std::cout << "Color updated to HSV(" << h << ", " << (s * 100) << "%, " << (v * 100) << "%)" << std::endl;
+            } else {
+                std::cout << "Invalid HSV values" << std::endl;
+            }
+        } else {
+            std::cout << "Invalid color wheel command" << std::endl;
+        }
+        
+        return true;
+    }
+
     // Draw the main interface
     void drawInterface() {
         clearScreen();
+        
+        // If we're in color wheel mode, show that instead of the main interface
+        if (showColorWheel) {
+            displayColorWheel();
+            return;
+        }
         
         // Draw header
         std::cout << BOLD << "ShaderSketch GUI Mode" << RESET << std::endl;
@@ -423,6 +601,7 @@ struct AppState {
         std::cout << BOLD << "Commands:" << RESET << std::endl;
         std::cout << "  t [0-" << (tools.size()-1) << "] - Select tool" << std::endl;
         std::cout << "  c [0-" << (colors.size()-1) << "] - Select color" << std::endl;
+        std::cout << "  wheel - " << MAGENTA << "Open interactive color wheel with harmony suggestions" << RESET << std::endl;
         std::cout << "  b [size] - Change brush size" << std::endl;
         std::cout << "  p [x] [y] - Paint at position" << std::endl;
         std::cout << "  l [index] - Select layer" << std::endl;
@@ -432,6 +611,7 @@ struct AppState {
         
         // 3D Model commands
         std::cout << std::endl << BOLD << "3D Model Commands:" << RESET << std::endl;
+        std::cout << "  paint3d [x] [y] - " << CYAN << "Paint directly on 3D model at position" << RESET << std::endl;
         std::cout << "  rx [angle] - Rotate around X axis" << std::endl;
         std::cout << "  ry [angle] - Rotate around Y axis" << std::endl;
         std::cout << "  rz [angle] - Rotate around Z axis" << std::endl;
@@ -703,6 +883,11 @@ struct AppState {
             return true;
         }
         
+        // If we're in color wheel mode, use that handler
+        if (showColorWheel) {
+            return handleColorWheelCommands(command);
+        }
+        
         // Split command into parts
         std::vector<std::string> parts;
         std::string part;
@@ -887,6 +1072,36 @@ struct AppState {
             // Toggle model visibility
             showModel = !showModel;
             std::cout << "Model visibility " << (showModel ? "enabled" : "disabled") << std::endl;
+        }
+        else if (cmd == "paint3d" && parts.size() > 2) {
+            // Paint directly on the 3D model
+            try {
+                int x = std::stoi(parts[1]);
+                int y = std::stoi(parts[2]);
+                
+                if (x >= 0 && x < MODEL_VIEW_WIDTH && y >= 0 && y < MODEL_VIEW_HEIGHT) {
+                    // Get the triangle at this position
+                    int triangleIndex = model->getTriangleAtPosition(x, y, triangleBuffer);
+                    
+                    if (triangleIndex >= 0 && triangleIndex < static_cast<int>(model->triangles.size())) {
+                        // Paint the triangle
+                        model->paintTriangle(triangleIndex, currentColor);
+                        std::cout << "Painted triangle " << triangleIndex << " with " 
+                                  << colors[currentColor].name << " color" << std::endl;
+                    } else {
+                        std::cout << "No triangle found at position (" << x << ", " << y << ")" << std::endl;
+                    }
+                } else {
+                    std::cout << "Position out of model view bounds" << std::endl;
+                }
+            } catch (...) {
+                std::cout << "Invalid position coordinates" << std::endl;
+            }
+        }
+        else if (cmd == "wheel") {
+            // Open the interactive color wheel
+            showColorWheel = true;
+            std::cout << "Opening interactive color wheel..." << std::endl;
         }
         else {
             std::cout << "Unknown command: " << cmd << std::endl;
